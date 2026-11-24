@@ -1628,32 +1628,32 @@
 
 <section v-if="currentMenu==='bizOverview'" class="space-y-6">
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
                         <div class="flex shrink-0 items-center gap-3">
                             <span class="whitespace-nowrap text-sm font-medium text-slate-500">查看对象</span>
                             <div class="inline-flex rounded-lg bg-slate-100 p-1">
                                 <button class="bg-white text-blue-600 shadow-sm whitespace-nowrap px-4 py-1.5 rounded-md text-sm font-medium">房源</button>
                             </div>
                         </div>
+                        <div class="flex flex-wrap items-center gap-3"><span class="text-sm text-slate-500">来源</span>
+                        <div class="inline-flex max-w-full flex-wrap gap-1 rounded-lg bg-slate-100 p-1" role="tablist" aria-label="业务对象看板来源渠道">
+                            <button v-for="src in fieldPerfSourceOptions" :key="src" @click="fieldPerfSource=src" :aria-selected="fieldPerfSource===src" role="tab" :class="fieldPerfSource===src ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white'" class="whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-semibold transition-colors">{{ src }}</button>
+                        </div>
+                        </div>
                         <div class="text-xs text-slate-500">T+1 · 数据日期 2026-11-23</div>
                     </div>
                 </div>
                 <div v-if="currentCity==='西安市'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <button @click="openMenuTab('standardFacts')" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <button @click="openBizBoardFacts('listed')" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <div class="text-sm font-medium text-slate-500">在库上架房源</div>
                         <div class="mt-2 text-3xl font-bold text-slate-900">{{ formatNumber(bizBoardTotals.validHouses) }}<span class="ml-1 text-sm font-normal text-slate-400">套</span></div>
                                             </button>
-                    <button @click="openMenuTab('standardFacts')" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500" title="存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源">
+                    <button @click="openBizBoardFacts('linked')" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500" title="存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源">
                         <div class="text-sm font-medium text-slate-500">安家顾问关联房源</div>
                         <div class="mt-2 text-3xl font-bold text-slate-900">{{ formatNumber(bizBoardTotals.advisorLinked) }}<span class="ml-1 text-sm font-normal text-slate-400">套</span></div>
                                             </button>
 </div>
                 <panel title="字段填充覆盖率表现">
-                    <template #title-extra>
-                        <div class="inline-flex max-w-full flex-wrap gap-1 rounded-lg bg-slate-100 p-1" role="tablist" aria-label="字段统计来源渠道">
-                            <button v-for="src in fieldPerfSourceOptions" :key="src" @click="fieldPerfSource=src" :aria-selected="fieldPerfSource===src" role="tab" :class="fieldPerfSource===src ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white'" class="whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-semibold transition-colors">{{ src }}</button>
-                        </div>
-                    </template>
                     <template #action><span class="text-xs text-slate-500 whitespace-nowrap">业务对象数据 · T+1 · 数据日期 2026-11-23</span></template>
                     <template v-if="currentCity==='西安市'">
                     <form @submit.prevent="applyFieldPerfLocation" class="flex flex-wrap items-end gap-3 border-b border-slate-100 px-5 py-4">
@@ -1891,6 +1891,7 @@
                     <label class="access-filter-item"><span>行政区</span><input v-model="factAssetFiltersDraft.district" @keyup.enter="applyFactAssetFilters" placeholder="行政区"></label>
                     <label class="access-filter-item"><span>板块</span><input v-model="factAssetFiltersDraft.block" @keyup.enter="applyFactAssetFilters" placeholder="板块"></label>
                     <label class="access-filter-item"><span>挂牌状态</span><select v-model="factAssetFiltersDraft.saleStatus"><option>全部</option><option>上架</option><option>疑似下架</option><option>下架</option></select></label>
+                    <label class="access-filter-item"><span>安家顾问关联</span><select v-model="factAssetFiltersDraft.advisorLinked"><option>全部</option><option>已关联</option></select></label>
                     <label v-show="factAdvancedFilters" class="access-filter-item"><span>户型</span><input v-model="factAssetFiltersDraft.layout" @keyup.enter="applyFactAssetFilters" placeholder="如 3室2厅"></label>
                     <label v-show="factAdvancedFilters" class="access-filter-item"><span>建筑面积(㎡)</span><span class="access-filter-range"><input v-model="factAssetFiltersDraft.areaMin" placeholder="下限"><input v-model="factAssetFiltersDraft.areaMax" placeholder="上限"></span></label>
                     <label v-show="factAdvancedFilters" class="access-filter-item"><span>挂牌总价（万元）</span><span class="access-filter-range"><input v-model="factAssetFiltersDraft.priceMin" placeholder="下限"><input v-model="factAssetFiltersDraft.priceMax" placeholder="上限"></span></label>
@@ -3962,7 +3963,7 @@ window.housingDataVm = createApp({
             factKeyword:'', factGroup:'全部', fieldPanelOpen:false, selectedFact:null, correctionDialog:null, correctionReason:'',
             mergeStep:1, mergeSourceCommunity:null, mergeBaseCommunity:null, mergeKeyword:'', mergeFieldRows:[], mergeReason:'', mergeConfirmed:false,
             communityMergeSteps:[{id:1,name:'选择保留的基准主小区'},{id:2,name:'核对关系与事实字段'},{id:3,name:'确认合并'}],
-            factAssetFilters:{source:'全部',houseId:'',title:'',masterCommunityName:'',district:'',block:'',saleStatus:'全部',layout:'',areaMin:'',areaMax:'',priceMin:'',priceMax:'',updatedStart:'',updatedEnd:''}, factAssetFiltersDraft:{source:'全部',houseId:'',title:'',masterCommunityName:'',district:'',block:'',saleStatus:'全部',layout:'',areaMin:'',areaMax:'',priceMin:'',priceMax:'',updatedStart:'',updatedEnd:''}, factAdvancedFilters:false, activeStandardFact:null, factDetailTab:'facts', factCurrentGroup:'全部', expandedFactField:'', factCorrectionDialog:null, factProvenanceDialog:null, imagePreviewDialog:null, imagePreviewIndex:0, evaluationEvidenceDialog:null, factCorrectionValue:'', factCorrectionNote:'', factFieldDefinitions:{'装修情况':{correctable:true,type:'enum',selectionMode:'single',options:['毛坯','简装','精装','豪华装']},'电梯':{correctable:false,type:'enum',selectionMode:'single',options:['有电梯','无电梯','未知']},'户型特点':{correctable:true,type:'enum',selectionMode:'multiple',options:['带院子','带露台','复式','边户','南北通透','全明']},'建成年代':{correctable:true,type:'text'}}, inferenceFeedbackDialog:null, inferenceFeedbackExpected:'', suggestionDecisionDialog:null, qualityIssueDialog:null, qualitySignalFilters:{strategy:'全部',recordType:'全部'},
+            factAssetFilters:{source:'全部',houseId:'',title:'',masterCommunityName:'',district:'',block:'',saleStatus:'全部',advisorLinked:'全部',layout:'',areaMin:'',areaMax:'',priceMin:'',priceMax:'',updatedStart:'',updatedEnd:''}, factAssetFiltersDraft:{source:'全部',houseId:'',title:'',masterCommunityName:'',district:'',block:'',saleStatus:'全部',advisorLinked:'全部',layout:'',areaMin:'',areaMax:'',priceMin:'',priceMax:'',updatedStart:'',updatedEnd:''}, factAdvancedFilters:false, activeStandardFact:null, factDetailTab:'facts', factCurrentGroup:'全部', expandedFactField:'', factCorrectionDialog:null, factProvenanceDialog:null, imagePreviewDialog:null, imagePreviewIndex:0, evaluationEvidenceDialog:null, factCorrectionValue:'', factCorrectionNote:'', factFieldDefinitions:{'装修情况':{correctable:true,type:'enum',selectionMode:'single',options:['毛坯','简装','精装','豪华装']},'电梯':{correctable:false,type:'enum',selectionMode:'single',options:['有电梯','无电梯','未知']},'户型特点':{correctable:true,type:'enum',selectionMode:'multiple',options:['带院子','带露台','复式','边户','南北通透','全明']},'建成年代':{correctable:true,type:'text'}}, inferenceFeedbackDialog:null, inferenceFeedbackExpected:'', suggestionDecisionDialog:null, qualityIssueDialog:null, qualitySignalFilters:{strategy:'全部',recordType:'全部'},
             factDetailTabs:[{id:'facts',name:'当前数据'},{id:'relations',name:'来源关系'},{id:'brokers',name:'关联安家顾问'}],
             legacyStandardFacts:[
                 {id:'SHF-NJ-0008821',title:'溪语悦庭 3室2厅 118㎡',source:'贝壳房源',sourceHouseId:'BK-NJ-882190',community:'溪语悦庭',masterCommunityName:'溪语悦庭',communityId:'MC-NJ-10294',district:'建邺区',block:'河西中',layout:'3室2厅2卫',area:'118.20㎡',price:'568万',priceValue:568,saleStatus:'在售',firstSeen:'2026-06-08 09:20',summary:'当前数据覆盖标题、价格、面积、户型、楼层、装修和在售状态等信息',coverage:'96%',issueStatus:'装修情况识别',version:'PROD-20260710.2',updatedAt:'2026-07-10 09:36',fields:[
@@ -4197,6 +4198,7 @@ window.housingDataVm = createApp({
                     (!f.district || String(item.district).includes(f.district)) &&
                     (!f.block || String(item.block).includes(f.block)) &&
                     (f.saleStatus==='全部'||item.saleStatus===f.saleStatus) &&
+                    (f.advisorLinked!=='已关联'||this.hasActiveAdvisorRelation(item)) &&
                     (!f.layout || String(item.layout).includes(f.layout)) &&
                     (!f.areaMin || area >= Number(f.areaMin)) &&
                     (!f.areaMax || area <= Number(f.areaMax)) &&
@@ -4304,8 +4306,12 @@ window.housingDataVm = createApp({
             return rows
         },
         bizBoardTotals(){
-            const sum=key=>Object.values(this.accessRegionData).flat().reduce((n,row)=>n+Number(row[key]||0),0);
-            return {validHouses:128640,advisorLinked:37280,newHouses:sum('newHouses')}
+            const source=this.fieldPerfSource;
+            const keys=Object.keys(this.fieldPerfSourceFactor);
+            const totals=Object.fromEntries(keys.map(key=>[key,Math.round(this.fieldPerfTotal*this.fieldPerfSourceFactor[key])]));
+            totals[keys.at(-1)]=this.fieldPerfTotal-keys.slice(0,-1).reduce((n,key)=>n+totals[key],0);
+            const linked={'贝壳房源':22000,'安居客房源':15280,'365房源':0,'辉达房源':0,'巧房房源':0};
+            return {validHouses:source==='全部来源'?this.fieldPerfTotal:totals[source]||0,advisorLinked:source==='全部来源'?37280:linked[source]||0}
         },
         dashChannelRate(){
             if(this.currentCity!=='西安市') return '—';
@@ -5452,7 +5458,7 @@ window.housingDataVm = createApp({
                 return String(master?.[key] || item?.[key] || '');
             },
 	        applyFactAssetFilters(){this.factAssetFilters={...this.factAssetFiltersDraft}},
-	        resetFactAssetFilters(){const defaults={source:'全部',houseId:'',title:'',masterCommunityName:'',district:'',block:'',saleStatus:'全部',layout:'',areaMin:'',areaMax:'',priceMin:'',priceMax:'',updatedStart:'',updatedEnd:''};this.factAssetFiltersDraft={...defaults};this.factAssetFilters={...defaults}},
+	        resetFactAssetFilters(){const defaults={source:'全部',houseId:'',title:'',masterCommunityName:'',district:'',block:'',saleStatus:'全部',advisorLinked:'全部',layout:'',areaMin:'',areaMax:'',priceMin:'',priceMax:'',updatedStart:'',updatedEnd:''};this.factAssetFiltersDraft={...defaults};this.factAssetFilters={...defaults}},
 	        openStandardFact(item){
                 const fact=JSON.parse(JSON.stringify(item));
                 const state={activeStandardFact:fact,factDetailTab:'facts',factCurrentGroup:'全部',expandedFactField:''};
@@ -5719,7 +5725,7 @@ window.housingDataVm = createApp({
 	        requestVersionAction(action){this.riskConfirm={visible:true,action,impact:'该操作会影响当前自动优化结果的线上使用范围，系统将保留处理前后的观测记录。',reason:''}},
 	        confirmRiskAction(){const action=this.riskConfirm.action;this.accessAuditData.unshift({id:Date.now(),time:'2026-07-10 15:30',operator:'平台管理员',module:'数据生产',target:'生产方案',action});this.riskConfirm.visible=false;this.toast(`${action}已记录到操作日志`)},
 	        runTrial(){if(this.trialRunning)return;this.trialRunning=true;setTimeout(()=>{this.trialRunning=false;this.toast('试算完成：2,000 条样本已完成多版本对比')},700)},
-	        showInheritedFacts(){const filters={source:'全部',houseId:'',title:'',masterCommunityName:this.activeItem?.name||'',district:'',block:'',saleStatus:'全部',layout:'',areaMin:'',areaMax:'',priceMin:'',priceMax:'',updatedStart:'',updatedEnd:''};this.factAssetFilters={...filters};this.factAssetFiltersDraft={...filters};this.currentMenu='standardFacts';this.toast('已筛选当前主小区关联房源')},
+	        showInheritedFacts(){const filters={source:'全部',houseId:'',title:'',masterCommunityName:this.activeItem?.name||'',district:'',block:'',saleStatus:'全部',advisorLinked:'全部',layout:'',areaMin:'',areaMax:'',priceMin:'',priceMax:'',updatedStart:'',updatedEnd:''};this.factAssetFilters={...filters};this.factAssetFiltersDraft={...filters};this.currentMenu='standardFacts';this.toast('已筛选当前主小区关联房源')},
 	        formatNumber(num){return new Intl.NumberFormat('en-US').format(num || 0)},
 	        isTrendUp(value){return !String(value || '').startsWith('-')},
 	        trendClass(value){return this.isTrendUp(value) ? 'text-green-600' : 'text-red-500'},
@@ -5991,6 +5997,18 @@ window.housingDataVm = createApp({
                     scales:{y:{min:low,max:100,grid:{color:'rgba(226,232,240,0.75)',drawBorder:false},border:{display:false},ticks:{padding:10,color:'#94a3b8',callback:value=>value+'%'}},x:{grid:{display:false},border:{display:false},ticks:{padding:10,color:'#94a3b8',maxTicksLimit:10,maxRotation:0}}}
                 }
             }))
+        },
+        hasActiveAdvisorRelation(item){
+            const house=this.housingState.houses.find(h=>h.id===item.id);
+            return Boolean(house&&Object.entries(this.housingState.relations).some(([key,r])=>key.endsWith('|'+house.key)&&r.active))
+        },
+        openBizBoardFacts(kind){
+            const source=this.fieldPerfSource;
+            this.openMenuTab('standardFacts');this.resetFactAssetFilters();
+            this.factAssetFiltersDraft.source=source==='全部来源'?'全部':source;
+            if(kind==='listed')this.factAssetFiltersDraft.saleStatus='上架';
+            if(kind==='linked')this.factAssetFiltersDraft.advisorLinked='已关联';
+            this.applyFactAssetFilters()
         },
         clearFieldPerfLocation(){
             this.fieldPerfDistrictDraft='';this.fieldPerfBlockDraft='';this.fieldPerfDistrict='';this.fieldPerfBlock='';this.fieldPerfLocationError=''

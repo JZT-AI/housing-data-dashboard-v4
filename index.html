@@ -625,6 +625,17 @@
             .production-rule-document th, .production-rule-document td { padding: 10px 8px !important; font-size: 13px; }
             .production-rule-heading { gap: 8px; }
         }
+        .coverage-ring-arc { transition: stroke-dasharray 240ms ease; }
+        @media (prefers-reduced-motion: reduce) { .coverage-ring-arc { transition: none; } }
+        .ui-access-monitor-table { min-width: 1120px; }
+        .ui-access-monitor-table .ui-col-name { width: 260px; min-width: 260px; }
+        .ui-access-monitor-table .ui-col-frequency { width: 164px; min-width: 164px; }
+        .ui-access-monitor-table .ui-col-datetime { width: 200px; min-width: 200px; }
+        .access-source-group + .access-source-group { border-top: 1px solid #e2e8f0; }
+        .access-source-group td { font-variant-numeric: tabular-nums; }
+        .access-source-linked td { border-top: 0; padding-top: 10px; padding-bottom: 12px; background: #f8fafc; font-size: 12px; }
+        .access-source-child-label { display: inline-flex; align-items: center; gap: 8px; padding-left: 12px; color: #64748b; font-weight: 400; }
+        .access-source-child-label svg { color: #a9b6c8; flex: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -1527,9 +1538,8 @@
                     <div v-if="accessMonitorView==='overview'" class="ui-table-scroll">
                         <table class="ui-table ui-access-monitor-table divide-y divide-slate-200">
                             <thead class="bg-slate-50"><tr><th class="ui-col-name px-5 py-3 text-left text-xs font-medium text-slate-500">来源名称</th><th class="ui-col-frequency px-5 py-3 text-left text-xs font-medium text-slate-500">更新频率</th><th class="ui-col-number px-5 py-3 text-xs font-medium text-slate-500">今日累计总量</th><th class="ui-col-number px-5 py-3 text-xs font-medium text-slate-500">今日新增</th><th class="ui-col-number px-5 py-3 text-xs font-medium text-slate-500">今日更新</th><th v-if="accessOverviewObjectType==='house'" class="ui-col-number px-5 py-3 text-xs font-medium text-slate-500">渠道采集率</th><th class="ui-col-datetime px-5 py-3 text-left text-xs font-medium text-slate-500">最近更新时间</th></tr></thead>
-                            <tbody class="divide-y divide-slate-200 bg-white">
-                                <template v-for="row in accessCurrentOverviewTable" :key="row.id">
-                                    <tr @click="accessTrendSource=row.sourceName" @keydown.enter.prevent="accessTrendSource=row.sourceName" @keydown.space.prevent="accessTrendSource=row.sourceName" tabindex="0" :aria-label="'查看'+row.sourceName+'近30天趋势'" :class="accessTrendSource===row.sourceName ? 'bg-indigo-50/60' : 'hover:bg-slate-50'" class="cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
+                            <tbody v-for="row in accessCurrentOverviewTable" :key="row.id" class="access-source-group bg-white">
+                                    <tr @click="accessTrendSource=row.sourceName" @keydown.enter.prevent="accessTrendSource=row.sourceName" @keydown.space.prevent="accessTrendSource=row.sourceName" tabindex="0" :aria-label="'查看'+row.sourceName+'近30天趋势'" :class="accessTrendSource===row.sourceName ? 'bg-indigo-50/60' : 'hover:bg-slate-50'" class="access-source-main cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
                                         <td class="ui-col-name px-5 py-4 text-sm font-semibold text-slate-900">{{ row.sourceName }}</td>
                                         <td class="ui-col-frequency px-5 py-4 text-sm text-slate-600" :title="['安居客房源','贝壳房源'].includes(row.sourceName)?'存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源':row.freq">{{ row.freq }}</td>
                                         <td class="ui-col-number px-5 py-4 text-sm font-semibold text-slate-900">{{ formatNumber(row.total) }}</td>
@@ -1538,16 +1548,15 @@
                                         <td v-if="accessOverviewObjectType==='house'" class="ui-col-number px-5 py-4 text-sm font-semibold text-indigo-600">{{ dashSourceRate(row.sourceName) }}</td>
                                         <td class="ui-col-datetime px-5 py-4 text-sm text-slate-500">{{ row.lastUpdate }}</td>
                                     </tr>
-                                    <tr v-if="accessOverviewObjectType==='house' && accessLinkedRows[row.sourceName] && accessLinkedRows[row.sourceName].total>0" class="bg-slate-50/60">
-                                        <td class="ui-col-name px-5 py-3 text-sm text-slate-600 whitespace-nowrap" title="存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源"><span class="mr-1.5 inline-block w-3.5"></span>安家顾问关联房源</td>
-                                        <td class="ui-col-frequency px-5 py-3 text-xs text-slate-500">每7日自动采集来源并更新</td>
-                                        <td class="ui-col-number px-5 py-3 text-sm font-semibold text-slate-700">{{ formatNumber(accessLinkedRows[row.sourceName].total) }}</td>
-                                        <td class="ui-col-number px-5 py-3 text-sm font-semibold text-blue-600">{{ formatNumber(accessLinkedRows[row.sourceName].new) }}</td>
-                                        <td class="ui-col-number px-5 py-3 text-sm font-semibold text-green-600">{{ formatNumber(accessLinkedRows[row.sourceName].updated) }}</td>
+                                    <tr v-if="accessOverviewObjectType==='house' && accessLinkedRows[row.sourceName] && accessLinkedRows[row.sourceName].total>0" class="access-source-linked">
+                                        <td class="ui-col-name px-5 py-3 text-sm text-slate-600 whitespace-nowrap" title="存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源"><span class="access-source-child-label"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 2v7a3 3 0 0 0 3 3h7M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>安家顾问关联房源</span></td>
+                                        <td class="ui-col-frequency px-5 py-3 text-xs text-slate-500" title="每7日自动采集来源并更新业务房源">每7日更新</td>
+                                        <td class="ui-col-number px-5 py-3 text-xs font-medium text-slate-600">{{ formatNumber(accessLinkedRows[row.sourceName].total) }}</td>
+                                        <td class="ui-col-number px-5 py-3 text-xs font-medium text-slate-600">{{ formatNumber(accessLinkedRows[row.sourceName].new) }}</td>
+                                        <td class="ui-col-number px-5 py-3 text-xs font-medium text-slate-600">{{ formatNumber(accessLinkedRows[row.sourceName].updated) }}</td>
                                         <td class="ui-col-number px-5 py-3 text-sm text-slate-400">—</td>
-                                        <td class="ui-col-datetime px-5 py-3 text-sm text-slate-400">随来源更新</td>
+                                        <td class="ui-col-datetime px-5 py-3 text-sm text-slate-400">—</td>
                                     </tr>
-                                </template>
                             </tbody>
                         </table>
                     </div>
@@ -1666,13 +1675,27 @@
                         <p v-if="fieldPerfLocationError" role="alert" class="w-full text-sm text-red-600">{{ fieldPerfLocationError }}</p>
                     </form>
                     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 p-5">
-                        <button v-for="cat in fieldPerfCategoryStats" :key="cat.name" @click="selectFieldPerfCategory(cat.name)" :class="fieldPerfCategory===cat.name ? 'border-indigo-500 bg-indigo-50/60 ring-1 ring-indigo-200' : 'border-slate-200 bg-white hover:border-slate-300'" class="rounded-xl border p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button v-for="(cat, catIndex) in fieldPerfCategoryStats" :key="cat.name" @click="selectFieldPerfCategory(cat.name)" :class="fieldPerfCategory===cat.name ? 'border-indigo-500 bg-indigo-50/60 ring-1 ring-indigo-200' : 'border-slate-200 bg-white hover:border-slate-300'" class="rounded-xl border p-4 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <div class="text-sm font-medium" :class="fieldPerfCategory===cat.name ? 'text-indigo-700' : 'text-slate-500'">{{ cat.name }}</div>
                             <div class="mt-3 flex items-center justify-between gap-2">
                                 <span class="text-2xl font-bold tracking-tight" :class="fieldPerfCategory===cat.name ? 'text-indigo-600' : 'text-slate-900'">{{ cat.rate.toFixed(2) }}%</span>
-                                <svg class="h-11 w-11 shrink-0 -rotate-90" viewBox="0 0 48 48" aria-hidden="true">
-                                    <circle cx="24" cy="24" r="19" fill="none" stroke="#e8edf5" stroke-width="5"></circle>
-                                    <circle cx="24" cy="24" r="19" fill="none" stroke="#6366f1" stroke-width="5" stroke-linecap="round" pathLength="100" :stroke-dasharray="cat.rate+' '+(100-cat.rate)"></circle>
+                                <svg class="coverage-ring h-14 w-14 shrink-0" viewBox="0 0 64 64" aria-hidden="true">
+                                    <defs>
+                                        <linearGradient :id="'coverage-ring-gradient-'+catIndex" x1="0%" y1="100%" x2="100%" y2="0%">
+                                            <stop offset="0%" :stop-color="coverageRingTone(cat.rate).light"></stop>
+                                            <stop offset="55%" :stop-color="coverageRingTone(cat.rate).base"></stop>
+                                            <stop offset="100%" :stop-color="coverageRingTone(cat.rate).deep"></stop>
+                                        </linearGradient>
+                                        <radialGradient :id="'coverage-ring-core-'+catIndex" cx="35%" cy="25%" r="80%">
+                                            <stop offset="0%" stop-color="#ffffff"></stop>
+                                            <stop offset="100%" :stop-color="coverageRingTone(cat.rate).mist"></stop>
+                                        </radialGradient>
+                                    </defs>
+                                    <circle cx="32" cy="32" r="26" fill="#fff" stroke="#f0f3f8" stroke-width="1"></circle>
+                                    <circle cx="32" cy="32" r="21.5" fill="none" stroke="#e9eef5" stroke-width="6.5"></circle>
+                                    <circle class="coverage-ring-arc" v-if="cat.rate>0" cx="32" cy="32" r="21.5" fill="none" :stroke="'url(#coverage-ring-gradient-'+catIndex+')'" stroke-width="6.5" stroke-linecap="round" pathLength="100" :stroke-dasharray="cat.rate+' '+(100-cat.rate)" transform="rotate(-90 32 32)" :style="{filter:'drop-shadow(0 1px 1.5px '+coverageRingTone(cat.rate).shadow+')'}"></circle>
+                                    <circle cx="32" cy="32" r="16.8" :fill="'url(#coverage-ring-core-'+catIndex+')'" stroke="#fff" stroke-width="1"></circle>
+                                    <circle v-if="cat.rate>0 && cat.rate<100" :cx="32+21.5*Math.sin(cat.rate/100*Math.PI*2)" :cy="32-21.5*Math.cos(cat.rate/100*Math.PI*2)" r="1.6" fill="#fff" opacity="0.9"></circle>
                                 </svg>
                             </div>
                             
@@ -6001,6 +6024,17 @@ window.housingDataVm = createApp({
                     scales:{y:{min:low,max:100,grid:{color:'rgba(226,232,240,0.75)',drawBorder:false},border:{display:false},ticks:{padding:10,color:'#94a3b8',callback:value=>value+'%'}},x:{grid:{display:false},border:{display:false},ticks:{padding:10,color:'#94a3b8',maxTicksLimit:10,maxRotation:0}}}
                 }
             }))
+        },
+        coverageRingTone(rate){
+            // Continuous visual color scale, not business completion tiers.
+            const stops=[[0,[223,159,79]],[50,[181,143,218]],[75,[115,129,226]],[100,[27,163,146]]];
+            const value=Math.max(0,Math.min(100,Number(rate)||0));
+            const hi=stops.findIndex(stop=>stop[0]>=value);
+            const left=stops[Math.max(0,hi-1)],right=stops[Math.max(0,hi)];
+            const amount=right[0]===left[0]?0:(value-left[0])/(right[0]-left[0]);
+            const rgb=left[1].map((v,i)=>Math.round(v+(right[1][i]-v)*amount));
+            const mix=(target,weight)=>'rgb('+rgb.map(v=>Math.round(v+(target-v)*weight)).join(',')+')';
+            return {base:'rgb('+rgb.join(',')+')',light:mix(255,0.32),deep:mix(0,0.12),mist:mix(255,0.92),shadow:'rgba('+rgb.join(',')+',0.23)'}
         },
         hasActiveAdvisorRelation(item){
             const house=this.housingState.houses.find(h=>h.id===item.id);

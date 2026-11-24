@@ -1627,19 +1627,19 @@
                             </section>
 
 <section v-if="currentMenu==='bizOverview'" class="space-y-6">
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 px-5 py-4">
-                    <div class="flex flex-wrap items-center gap-x-7 gap-y-3">
+                <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
                         <div class="flex items-center gap-3">
                             <span class="whitespace-nowrap text-sm font-medium text-slate-500">查看对象</span>
                             <span class="inline-flex h-9 items-center rounded-md bg-indigo-50 px-4 text-sm font-semibold text-indigo-700">房源</span>
                         </div>
-                        <div class="flex min-w-0 flex-wrap items-center gap-4 border-l border-slate-200 pl-6">
-                            <span class="text-sm font-medium text-slate-500">来源</span>
-                            <div class="flex flex-wrap items-center gap-x-5 gap-y-1" role="tablist" aria-label="业务对象看板来源渠道">
-                                <button v-for="src in fieldPerfSourceOptions" :key="src" @click="fieldPerfSource=src" role="tab" :aria-selected="fieldPerfSource===src" :class="fieldPerfSource===src ? 'border-indigo-600 text-indigo-600 font-semibold' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-800'" class="h-9 whitespace-nowrap border-b-2 px-0.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300">{{ src }}</button>
-                            </div>
+                        <div class="text-xs text-slate-500">T+1 · 数据日期 2026-11-23</div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 border-t border-slate-100 px-5 py-3">
+                        <span class="text-sm font-medium text-slate-500">来源</span>
+                        <div class="inline-flex max-w-full flex-wrap gap-1 rounded-lg bg-slate-100 p-1" role="tablist" aria-label="业务对象看板来源渠道">
+                            <button v-for="src in fieldPerfSourceOptions" :key="src" @click="fieldPerfSource=src" :aria-selected="fieldPerfSource===src" role="tab" :class="fieldPerfSource===src ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:bg-white'" class="whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">{{ src }}</button>
                         </div>
-                        <div class="ml-auto text-xs text-slate-500">T+1 · 数据日期 2026-11-23</div>
                     </div>
                 </div>
                 <div v-if="currentCity==='西安市'" class="grid grid-cols-1 md:grid-cols-2 gap-6">

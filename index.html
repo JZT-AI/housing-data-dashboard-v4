@@ -1716,11 +1716,12 @@
                     <div class="border-t border-slate-100 px-5 pb-5">
                         <div class="flex flex-wrap items-center justify-between gap-3 py-4">
                             <div class="text-sm font-semibold text-slate-800">{{ fieldPerfCategory }} <span class="ml-1 text-xs font-normal text-slate-400">共 {{ (fieldPerfFields[fieldPerfCategory]||[]).length }} 个字段 · {{ fieldPerfSource }} · {{ fieldPerfLocationLabel }}</span></div>
+                            <div v-if="fieldPerfCommonTotal!==null" class="text-xs text-slate-500">总房源量 <span class="ml-1 font-semibold tabular-nums text-slate-700">{{ formatNumber(fieldPerfCommonTotal) }}</span></div>
                         </div>
                         <div class="ui-table-scroll border border-slate-200 rounded-lg">
                             <table class="ui-table divide-y divide-slate-200">
-                                <thead class="bg-slate-50"><tr><th class="px-5 py-3 text-left text-xs font-medium text-slate-500">字段名称</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">有值房源量</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">总房源量</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">昨日新增有值房源量</th><th class="px-5 py-3 text-left text-xs font-medium text-slate-500 min-w-[180px]">覆盖率</th></tr></thead>
-                                <tbody class="divide-y divide-slate-200 bg-white"><tr v-for="field in fieldPerfActiveRows" :key="fieldPerfCategory+field.name" @click="fieldPerfTrendName=field.name" :class="fieldPerfTrendName===field.name ? 'bg-indigo-50/60' : 'hover:bg-slate-50'" class="cursor-pointer"><td class="px-5 py-3 text-sm font-medium whitespace-nowrap"><button @click="fieldPerfTrendName=field.name" :class="fieldPerfTrendName===field.name ? 'text-indigo-700 font-bold' : 'text-slate-900'" class="rounded-sm text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">{{ field.name }}</button></td><td class="px-5 py-3 text-center text-sm text-slate-700">{{ formatNumber(field.valid) }}</td><td class="px-5 py-3 text-center text-sm text-slate-700">{{ formatNumber(field.total) }}</td><td class="px-5 py-3 text-center text-sm font-semibold text-blue-600">{{ formatNumber(field.yesterdayNew) }}</td><td class="px-5 py-3"><div class="flex items-center gap-2"><div class="h-1.5 w-24 rounded-full bg-slate-100"><div class="coverage-field-bar h-1.5 rounded-full" :style="{width:field.rate+'%',background:'linear-gradient(90deg, '+coverageRingTone(field.rate).light+' 0%, '+coverageRingTone(field.rate).base+' 60%, '+coverageRingTone(field.rate).deep+' 100%)'}"></div></div><span class="text-sm font-semibold text-slate-900">{{ field.rate.toFixed(2) }}%</span></div></td></tr></tbody>
+                                <thead class="bg-slate-50"><tr><th class="px-5 py-3 text-left text-xs font-medium text-slate-500">字段名称</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">有值房源量</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">昨日新增有值房源量</th><th class="px-5 py-3 text-left text-xs font-medium text-slate-500 min-w-[180px]">覆盖率</th></tr></thead>
+                                <tbody class="divide-y divide-slate-200 bg-white"><tr v-for="field in fieldPerfActiveRows" :key="fieldPerfCategory+field.name" @click="fieldPerfTrendName=field.name" :class="fieldPerfTrendName===field.name ? 'bg-indigo-50/60' : 'hover:bg-slate-50'" class="cursor-pointer"><td class="px-5 py-3 text-sm font-medium whitespace-nowrap"><button @click="fieldPerfTrendName=field.name" :class="fieldPerfTrendName===field.name ? 'text-indigo-700 font-bold' : 'text-slate-900'" class="rounded-sm text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">{{ field.name }}</button></td><td class="px-5 py-3 text-center text-sm text-slate-700">{{ formatNumber(field.valid) }}</td><td class="px-5 py-3 text-center text-sm font-semibold text-blue-600">{{ formatNumber(field.yesterdayNew) }}</td><td class="px-5 py-3"><div class="flex items-center gap-2"><div class="h-1.5 w-24 rounded-full bg-slate-100"><div class="coverage-field-bar h-1.5 rounded-full" :style="{width:field.rate+'%',background:'linear-gradient(90deg, '+coverageRingTone(field.rate).light+' 0%, '+coverageRingTone(field.rate).base+' 60%, '+coverageRingTone(field.rate).deep+' 100%)'}"></div></div><span class="text-sm font-semibold text-slate-900">{{ field.rate.toFixed(2) }}%</span></div><div v-if="fieldPerfCommonTotal===null" class="mt-1 text-xs text-slate-500">总房源量 {{ formatNumber(field.total) }}</div></td></tr></tbody>
                             </table>
                             <div v-if="!fieldPerfActiveRows.length" class="py-12 text-center text-sm text-slate-400">当前来源下暂无该分类的字段统计数据</div>
                         </div>
@@ -3634,7 +3635,7 @@ window.housingDataVm = createApp({
         return {
             housingState:window.HousingDemo.platformState(), housingRecordKey:'', housingRecordQuery:'', housingUnsubscribe:null, housingActiveRequestId:'', housingFilters:{query:'',entry:'全部',status:'全部',start:'',end:''}, housingFiltersDraft:{query:'',entry:'全部',status:'全部',start:'',end:''},
             icons, currentMenu:'accessOverview', activeTabId:'menu:accessOverview', tabOverflowOpen:false, tabHistory:[],
-            openedTabs: [{ id:'menu:accessOverview', route:'accessOverview', name:'接入数据看板', type:'menu', closable:false, state:{} }],
+            openedTabs: [{ id:'menu:accessOverview', route:'accessOverview', name:'来源对象看板', type:'menu', closable:false, state:{} }],
             currentCity:'西安市', cities:['南京市','无锡市','合肥市','苏州市','芜湖市','西安市'], userMenuOpen:false,
             standardFacts:REAL_STANDARD_FACTS,
             communities:REAL_COMMUNITIES,
@@ -3642,7 +3643,7 @@ window.housingDataVm = createApp({
             expandedGroups:{dashboard:true,access:true,objects:true,governance:true,production:true,logs:true,system:true},
             sidebarGroups:[
                 {id:'dashboard',name:'数据看板',icon:icons.chart,items:[
-                    {id:'accessOverview',name:'接入数据看板',icon:icons.home},
+                    {id:'accessOverview',name:'来源对象看板',icon:icons.home},
                     {id:'bizOverview',name:'业务对象看板',icon:icons.objects}
                 ]},
                 {id:'access',name:'数据接入',icon:icons.ingest,items:[
@@ -4268,7 +4269,7 @@ window.housingDataVm = createApp({
                 masterCommunity:'主小区',
                 rules:'治理规则',
                 audit:'主小区治理记录',
-                accessOverview:'接入数据看板',bizOverview:'业务对象看板',
+                accessOverview:'来源对象看板',bizOverview:'业务对象看板',
                 accessSource:'来源管理',
                 accessData:'来源对象',
                 accessRule:'接入监控规则',
@@ -4431,6 +4432,10 @@ window.housingDataVm = createApp({
             return this.fieldPerfCategoryStats.find(cat=>cat.name===this.fieldPerfCategory) || this.fieldPerfCategoryStats[0] || {name:'',valid:0,total:0,rate:0}
         },
         fieldPerfActiveRows(){return this.fieldPerfRowsFor(this.fieldPerfCategory)},
+        fieldPerfCommonTotal(){
+            const rows=this.fieldPerfActiveRows;
+            return rows.length && rows.every(row=>row.total===rows[0].total) ? rows[0].total : null
+        },
         fieldPerfTrendOptions(){
             const fields=(this.fieldPerfFields[this.fieldPerfCategory]||[]).map(item=>item.split('|')[0]);
             return [this.fieldPerfCategory,...fields]
@@ -5845,7 +5850,7 @@ window.housingDataVm = createApp({
 	            return selected ? 'border-blue-300 bg-blue-50 text-blue-900 font-semibold' : 'border-slate-200 bg-slate-50'
 	        },
         toggleNavGroup(group){this.expandedGroups[group]=!this.expandedGroups[group]},
-        menuTabTitle(route){return ({tasks:'治理任务',masterCommunity:'主小区',rules:'治理规则',audit:'主小区治理记录',accessOverview:'接入数据看板',bizOverview:'业务对象看板',accessSource:'来源管理',accessData:'来源对象',accessRule:'接入监控规则',accessAlarm:'告警中心',operationLog:'操作记录',userManagement:'用户管理',housingUploads:'房源上传记录',housingUploadDetail:'上传请求明细',standardFacts:'房源',quality:'生产方案',qualityDetail:'生产方案详情',qualitySignals:'质量问题',strategyTrial:'方案建议评估',communityMerge:'合并主小区'})[route]||'页面'},
+        menuTabTitle(route){return ({tasks:'治理任务',masterCommunity:'主小区',rules:'治理规则',audit:'主小区治理记录',accessOverview:'来源对象看板',bizOverview:'业务对象看板',accessSource:'来源管理',accessData:'来源对象',accessRule:'接入监控规则',accessAlarm:'告警中心',operationLog:'操作记录',userManagement:'用户管理',housingUploads:'房源上传记录',housingUploadDetail:'上传请求明细',standardFacts:'房源',quality:'生产方案',qualityDetail:'生产方案详情',qualitySignals:'质量问题',strategyTrial:'方案建议评估',communityMerge:'合并主小区'})[route]||'页面'},
         openUserDialog(user=null){
             this.userDialogMode=user?'edit':'create';
             this.editingUserId=user?.id||'';

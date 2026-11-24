@@ -1549,7 +1549,7 @@
                                         <td class="ui-col-datetime px-5 py-4 text-sm text-slate-500">{{ row.lastUpdate }}</td>
                                     </tr>
                                     <tr v-if="accessOverviewObjectType==='house' && accessLinkedRows[row.sourceName] && accessLinkedRows[row.sourceName].total>0" class="access-source-linked">
-                                        <td class="ui-col-name px-5 py-3 text-sm text-slate-600 whitespace-nowrap" title="存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源"><span class="access-source-child-label"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 2v7a3 3 0 0 0 3 3h7M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>安家顾问关联房源</span></td>
+                                        <td class="ui-col-name px-5 py-3 text-sm text-slate-600 whitespace-nowrap" title="存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源"><span class="access-source-child-label"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 2v7a3 3 0 0 0 3 3h7M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>安家顾问关联上架房源</span></td>
                                         <td class="ui-col-frequency px-5 py-3 text-xs text-slate-500" title="每7日自动采集来源并更新业务房源">每7日更新</td>
                                         <td class="ui-col-number px-5 py-3 text-xs font-medium text-slate-600">{{ formatNumber(accessLinkedRows[row.sourceName].total) }}</td>
                                         <td class="ui-col-number px-5 py-3 text-xs font-medium text-slate-600">{{ formatNumber(accessLinkedRows[row.sourceName].new) }}</td>
@@ -1652,14 +1652,14 @@
                     </div>
                 </div>
                 <div v-if="currentCity==='西安市'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <button @click="openBizBoardFacts('listed')" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left">
                         <div class="text-sm font-medium text-slate-500">在库上架房源</div>
                         <div class="mt-2 text-3xl font-bold text-slate-900">{{ formatNumber(bizBoardTotals.validHouses) }}<span class="ml-1 text-sm font-normal text-slate-400">套</span></div>
-                                            </button>
-                    <button @click="openBizBoardFacts('linked')" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500" title="存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源">
-                        <div class="text-sm font-medium text-slate-500">安家顾问关联房源</div>
+                                            </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left" title="统计挂牌状态为上架且存在有效安家顾问关联的业务房源">
+                        <div class="text-sm font-medium text-slate-500">安家顾问关联上架房源</div>
                         <div class="mt-2 text-3xl font-bold text-slate-900">{{ formatNumber(bizBoardTotals.advisorLinked) }}<span class="ml-1 text-sm font-normal text-slate-400">套</span></div>
-                                            </button>
+                                            </div>
 </div>
                 <panel title="字段填充覆盖率表现">
                     <template #action><span class="text-xs text-slate-500 whitespace-nowrap">业务对象数据 · T+1 · 数据日期 2026-11-23</span></template>
@@ -6039,14 +6039,6 @@ window.housingDataVm = createApp({
         hasActiveAdvisorRelation(item){
             const house=this.housingState.houses.find(h=>h.id===item.id);
             return Boolean(house&&Object.entries(this.housingState.relations).some(([key,r])=>key.endsWith('|'+house.key)&&r.active))
-        },
-        openBizBoardFacts(kind){
-            const source=this.fieldPerfSource;
-            this.openMenuTab('standardFacts');this.resetFactAssetFilters();
-            this.factAssetFiltersDraft.source=source==='全部来源'?'全部':source;
-            if(kind==='listed')this.factAssetFiltersDraft.saleStatus='上架';
-            if(kind==='linked')this.factAssetFiltersDraft.advisorLinked='已关联';
-            this.applyFactAssetFilters()
         },
         clearFieldPerfLocation(){
             this.fieldPerfDistrictDraft='';this.fieldPerfBlockDraft='';this.fieldPerfDistrict='';this.fieldPerfBlock='';this.fieldPerfLocationError=''

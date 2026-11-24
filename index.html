@@ -4474,7 +4474,7 @@ window.housingDataVm = createApp({
             return this.accessTrendSource || '全部来源'
         },
         accessTrendLegend(){
-            return this.accessMonitorView==='detail' ? ['新增房源','累计总量'] : ['新增量','更新量']
+            return ['新增量','更新量']
         },
         accessTrendHasData(){
             if(this.accessMonitorView==='detail') return this.currentCity==='西安市' && this.accessOverviewObjectType==='house' && this.accessRegionRows.length>0;
@@ -5984,12 +5984,15 @@ window.housingDataVm = createApp({
                 const block=region?.blocks.find(item=>item.block===this.accessTrendBlock);
                 const target=block||region;
                 const baseNew=target ? target.newHouses : rows.reduce((n,item)=>n+item.newHouses,0);
-                const baseTotal=target ? target.validHouses : rows.reduce((n,item)=>n+item.validHouses,0);
+                const baseUpdated=target ? target.updatedHouses : rows.reduce((n,item)=>n+item.updatedHouses,0);
                 const newSeries=dates.map((_,index)=>{
                     if(index===29) return baseNew;
                     return Math.max(0,Math.round(baseNew*(0.86+Math.sin((index+2)*0.7)*0.16+((index*11)%5-2)*0.04)))
                 });
-                const updateSeries=dates.map((_,index)=>baseTotal-newSeries.slice(index+1).reduce((n,v)=>n+v,0));
+                const updateSeries=dates.map((_,index)=>{
+                    if(index===29) return baseUpdated;
+                    return Math.max(0,Math.round(baseUpdated*(0.9+Math.cos((index+1)*0.59)*0.13+((index*7)%5-2)*0.035)))
+                });
                 return {labels,newSeries,updateSeries}
             }
             const aggregateMetric=(key,index)=>{
@@ -6034,14 +6037,13 @@ window.housingDataVm = createApp({
             const trend=this.buildAccessTrendSeries();
             const scopeLabel=this.accessTrendScopeLabel;
             const legend=this.accessTrendLegend;
-            const isDetail=this.accessMonitorView==='detail';
             this._accessOverviewChart = Vue.markRaw(new Chart(canvas, {
                 type:'line',
                 data:{
                     labels:trend.labels,
                     datasets:[
                         {label:legend[0],data:trend.newSeries,borderColor:'#6366f1',backgroundColor:'rgba(99, 102, 241, 0.14)',borderWidth:3,tension:0.42,fill:true,pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:'#6366f1',pointHoverBorderColor:'#fff',pointHoverBorderWidth:3},
-                        {label:legend[1],data:trend.updateSeries,borderColor:'#3b82f6',backgroundColor:'rgba(59, 130, 246, 0.06)',borderWidth:3,tension:0.42,fill:!isDetail,pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:'#3b82f6',pointHoverBorderColor:'#fff',pointHoverBorderWidth:3,...(isDetail?{yAxisID:'y1'}:{})}
+                        {label:legend[1],data:trend.updateSeries,borderColor:'#3b82f6',backgroundColor:'rgba(59, 130, 246, 0.06)',borderWidth:3,tension:0.42,fill:true,pointRadius:0,pointHoverRadius:5,pointHoverBackgroundColor:'#3b82f6',pointHoverBorderColor:'#fff',pointHoverBorderWidth:3}
                     ]
                 },
                 options:{
@@ -6065,7 +6067,6 @@ window.housingDataVm = createApp({
                     },
                     scales:{
                         y:{beginAtZero:true,grid:{color:'rgba(226,232,240,0.75)',drawBorder:false},border:{display:false},ticks:{padding:10,color:'#94a3b8',callback:value=>Number(value).toLocaleString('zh-CN')}},
-                        ...(isDetail?{y1:{position:'right',grid:{display:false},border:{display:false},ticks:{padding:10,color:'#94a3b8',callback:value=>Number(value).toLocaleString('zh-CN')}}}:{ }),
                         x:{grid:{display:false},border:{display:false},ticks:{padding:10,color:'#94a3b8',maxTicksLimit:10,maxRotation:0}}
                     }
                 }

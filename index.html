@@ -636,6 +636,18 @@
         .access-source-linked td { border-top: 0; padding-top: 10px; padding-bottom: 12px; background: #f8fafc; font-size: 12px; }
         .access-source-child-label { display: inline-flex; align-items: center; gap: 8px; padding-left: 12px; color: #64748b; font-weight: 400; }
         .access-source-child-label svg { color: #a9b6c8; flex: none; }
+        .trend-picker-measure { position: absolute; visibility: hidden; pointer-events: none; display: flex; width: max-content; white-space: nowrap; }
+        .trend-picker-line { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; }
+        .trend-picker-visible { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+        .trend-field-choice { display: inline-block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; text-align: center; vertical-align: middle; flex: none; align-items: center; justify-content: center; min-height: 32px; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 7px; background: #fff; color: #64748b; font-size: 12px; font-weight: 500; line-height: 18px; white-space: nowrap; }
+        .trend-field-choice:hover { color: #334155; background: #f8fafc; border-color: #cbd5e1; }
+        .trend-field-choice.is-active { color: #4f46e5; background: #eef2ff; border-color: #c7d2fe; }
+        .trend-field-choice:focus-visible, .trend-field-more:focus-visible { outline: 2px solid #818cf8; outline-offset: 2px; }
+        .trend-field-more { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: 32px; padding: 6px 10px; border: 1px solid transparent; border-radius: 7px; background: #f8fafc; color: #4f46e5; font-size: 12px; font-weight: 500; line-height: 18px; white-space: nowrap; }
+        .trend-field-more:hover { background: #eef2ff; }
+        .trend-field-count { color: #64748b; font-variant-numeric: tabular-nums; }
+        .trend-picker-results { max-height: 208px; overflow-y: auto; align-content: flex-start; padding: 2px; }
+        .trend-picker-panel { margin-top: 10px; padding: 14px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -1718,11 +1730,10 @@
                                     <span class="text-sm font-medium text-slate-700">{{ fieldPerfTrendName }} · 近30日填充覆盖率趋势</span>
                                     <span class="text-xl font-bold text-indigo-600">{{ fieldPerfTrendRate }}</span>
                                 </div>
-                                <div class="inline-flex max-w-full flex-wrap justify-end rounded-lg bg-slate-100 p-0.5">
-                                    <button v-for="opt in fieldPerfTrendOptions" :key="opt" @click="fieldPerfTrendName=opt" :class="fieldPerfTrendName===opt ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium transition-colors">{{ opt }}</button>
-                                </div>
+
                             </div>
-                            <div class="mt-2 flex flex-wrap gap-5 text-xs text-slate-500"><span>{{ fieldPerfSource }} · {{ fieldPerfLocationLabel }}</span><span>10-25 至 11-23</span></div><div class="mt-3 h-64"><canvas id="fieldPerfTrendChart" role="img" :aria-label="`${fieldPerfTrendSeries.target}近30日填充覆盖率趋势图`"></canvas></div>
+                            <div class="mt-2 flex flex-wrap gap-5 text-xs text-slate-500"><span>{{ fieldPerfSource }} · {{ fieldPerfLocationLabel }}</span><span>10-25 至 11-23</span></div>
+                            <trend-field-picker class="mt-4" v-model="fieldPerfTrendName" :options="fieldPerfTrendOptions"></trend-field-picker><div class="mt-3 h-64"><canvas id="fieldPerfTrendChart" role="img" :aria-label="`${fieldPerfTrendSeries.target}近30日填充覆盖率趋势图`"></canvas></div>
                         </div>
                     </div>
                     </template>
@@ -3546,6 +3557,62 @@ window.housingDataVm = createApp({
                         </button>
                     </template>
                 </div>`
+        },
+        'trend-field-picker':{
+            props:['options','modelValue'],emits:['update:modelValue'],
+            data(){return {expanded:false,keyword:'',visible:[],observer:null}},
+            computed:{
+                hiddenCount(){return Math.max(0,this.options.length-this.visible.length)},
+                matching(){const word=this.keyword.trim().toLowerCase();return this.options.slice(1).filter(name=>!word||name.toLowerCase().includes(word))},
+                panelId(){return 'trend-fields-'+this.$.uid}
+            },
+            methods:{
+                measure(){
+                    if(!this.$refs.line||!this.$refs.measure)return;
+                    const nodes=Array.from(this.$refs.measure.querySelectorAll('[data-option]'));
+                    const widths=nodes.map(node=>Math.ceil(node.getBoundingClientRect().width));
+                    const width=this.$refs.line.clientWidth,gap=6;
+                    const total=widths.reduce((n,v)=>n+v,0)+Math.max(0,widths.length-1)*gap;
+                    if(total<=width){this.visible=[...this.options];return}
+                    const moreWidth=Math.ceil(this.$refs.moreMeasure.getBoundingClientRect().width)+8;
+                    const available=Math.max(0,width-moreWidth);let used=0,indices=[];
+                    for(let i=0;i<this.options.length;i++){
+                        const next=widths[i]+(indices.length?gap:0);
+                        if(used+next>available)break;
+                        indices.push(i);used+=next
+                    }
+                    const selected=this.options.indexOf(this.modelValue);
+                    if(selected>=0&&!indices.includes(selected)){
+                        while(indices.length>1&&used+widths[selected]+gap>available){const last=indices.pop();used-=widths[last]+gap}
+                        if(!indices.includes(selected))indices.push(selected)
+                    }
+                    if(!indices.length&&this.options.length)indices=[0];
+                    this.visible=indices.map(index=>this.options[index])
+                },
+                toggle(){this.expanded=!this.expanded;this.keyword='';if(this.expanded)this.$nextTick(()=>this.$refs.search?.focus())},
+                close(){this.expanded=false;this.keyword='';this.$nextTick(()=>this.$refs.more?.focus())},
+                choose(name){this.$emit('update:modelValue',name);this.expanded=false;this.keyword='';this.$nextTick(()=>{this.measure();this.$nextTick(()=>this.$refs.line?.querySelector('[aria-pressed="true"]')?.focus())})}
+            },
+            watch:{
+                options(){this.expanded=false;this.keyword='';this.$nextTick(this.measure)},
+                modelValue(){this.$nextTick(this.measure)}
+            },
+            mounted(){this.$nextTick(this.measure);this.observer=new ResizeObserver(()=>this.measure());this.observer.observe(this.$refs.line)},
+            beforeUnmount(){this.observer?.disconnect()},
+            template:`<div class="trend-field-picker relative min-w-0" @keydown.esc.stop.prevent="close">
+                <div ref="measure" class="trend-picker-measure" aria-hidden="true"><span v-for="name in options" :key="name" data-option class="trend-field-choice">{{name}}</span><span ref="moreMeasure" class="trend-field-more">更多字段 {{options.length}}</span></div>
+                <div ref="line" class="trend-picker-line" role="group" aria-label="趋势字段快捷筛选">
+                    <div class="trend-picker-visible">
+                        <button v-for="name in visible" :key="name" type="button" class="trend-field-choice" :class="{'is-active':modelValue===name}" :aria-pressed="modelValue===name" :title="name" @click="choose(name)">{{name}}</button>
+                    </div>
+                    <button v-if="hiddenCount || expanded" ref="more" type="button" class="trend-field-more" :aria-expanded="expanded" :aria-controls="panelId" @click="toggle">{{expanded?'收起':'更多字段'}}<span v-if="!expanded" class="trend-field-count">{{hiddenCount}}</span><svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" :style="{transform:expanded?'rotate(180deg)':''}" aria-hidden="true"><path d="m5 7 5 5 5-5"/></svg></button>
+                </div>
+                <section v-if="expanded" :id="panelId" class="trend-picker-panel" aria-label="更多趋势字段">
+                    <div class="flex flex-wrap items-center gap-3"><input ref="search" v-model="keyword" type="search" aria-label="搜索趋势字段" placeholder="搜索字段名称" class="h-9 w-64 max-w-full rounded-md border border-slate-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"><span class="text-xs text-slate-500">{{matching.length}} 个字段</span></div>
+                    <div class="trend-picker-results mt-3 flex flex-wrap gap-2"><button v-for="name in matching" :key="name" type="button" class="trend-field-choice" :class="{'is-active':modelValue===name}" :aria-pressed="modelValue===name" :title="name" @click="choose(name)">{{name}}</button></div>
+                    <div v-if="!matching.length" class="py-5 text-center text-sm text-slate-500">未找到匹配字段，请调整搜索</div>
+                </section>
+            </div>`
         },
         'metric-card':{props:['title','value','tone','sub'],computed:{color(){return {blue:'text-blue-600',green:'text-green-600',amber:'text-amber-600',red:'text-red-600'}[this.tone]||'text-slate-900'}},template:`<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5"><div class="text-sm font-medium text-slate-500">{{ title }}</div><div :class="['mt-2 text-3xl font-bold', color]">{{ value }}</div><div class="mt-2 text-sm text-slate-500">{{ sub }}</div></div>`},
         'panel':{props:['title'],template:`<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><div class="px-5 py-4 border-b border-slate-200 flex flex-wrap gap-3 items-center justify-between"><div class="flex flex-wrap items-center gap-3"><h2 class="text-base font-semibold text-slate-900">{{ title }}</h2><slot name="title-extra"></slot></div><slot name="action"></slot></div><slot></slot></div>`},

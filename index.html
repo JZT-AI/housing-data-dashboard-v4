@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI房地产数据平台 V4.0 · 数据看板</title>
+    <title>AI房地产数据平台-数据看板 · V4.0</title>
     <script src="assets/housing-demo.js"></script>
     <script src="assets/housing-samples.js"></script>
     <script src="assets/tailwind.js"></script>
@@ -1546,14 +1546,14 @@
                             <button v-for="v in [{k:'overview',t:'总览'},{k:'detail',t:'明细'}]" :key="v.k" @click="accessMonitorView=v.k" :class="accessMonitorView===v.k ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="rounded-md px-3 py-1 text-xs font-medium transition-colors">{{ v.t }}</button>
                         </div>
                     </template>
-                    <template #action><span class="text-xs text-slate-500 whitespace-nowrap">{{ accessMonitorView==='overview' ? `统计截至 ${accessCurrentOverview.snapshotAt} · 每1小时刷新` : 'T+1 · 数据日期 2026-11-23' }}</span></template>
+                    <template #action><span class="text-xs text-slate-500 whitespace-nowrap">统计截至 {{ accessCurrentOverview.snapshotAt }} · 每1小时刷新</span></template>
                     <div v-if="accessMonitorView==='overview'" class="ui-table-scroll">
                         <table class="ui-table ui-access-monitor-table divide-y divide-slate-200">
                             <thead class="bg-slate-50"><tr><th class="ui-col-name px-5 py-3 text-left text-xs font-medium text-slate-500">来源名称</th><th class="ui-col-frequency px-5 py-3 text-left text-xs font-medium text-slate-500">更新频率</th><th class="ui-col-number px-5 py-3 text-xs font-medium text-slate-500" :title="accessOverviewObjectType==='house' ? '截至统计时点处于上架状态的来源房源有效总量' : '沿用前期有效总量口径'">今日累计总量</th><th class="ui-col-number px-5 py-3 text-xs font-medium text-slate-500">今日新增</th><th class="ui-col-number px-5 py-3 text-xs font-medium text-slate-500">今日更新</th><th v-if="accessOverviewObjectType==='house'" class="ui-col-number px-5 py-3 text-xs font-medium text-slate-500">渠道采集率</th><th class="ui-col-datetime px-5 py-3 text-left text-xs font-medium text-slate-500">最近更新时间</th></tr></thead>
                             <tbody v-for="row in accessCurrentOverviewTable" :key="row.id" class="access-source-group bg-white">
                                     <tr @click="accessTrendSource=row.sourceName" @keydown.enter.prevent="accessTrendSource=row.sourceName" @keydown.space.prevent="accessTrendSource=row.sourceName" tabindex="0" :aria-label="'查看'+row.sourceName+'近30天趋势'" :class="accessTrendSource===row.sourceName ? 'bg-indigo-50/60' : 'hover:bg-slate-50'" class="access-source-main cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500">
                                         <td class="ui-col-name px-5 py-4 text-sm font-semibold text-slate-900">{{ row.sourceName }}</td>
-                                        <td class="ui-col-frequency px-5 py-4 text-sm text-slate-600" :title="['安居客房源','贝壳房源'].includes(row.sourceName)?'存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源':row.freq">{{ row.freq }}</td>
+                                        <td class="ui-col-frequency px-5 py-4 text-sm text-slate-600" :title="['安居客房源','贝壳房源'].includes(row.sourceName)?'安家顾问关联状态为已关联的房源，取消关联不计入，每7日自动采集来源并更新业务房源':row.freq">{{ row.freq }}</td>
                                         <td class="ui-col-number px-5 py-4 text-sm font-semibold text-slate-900">{{ formatNumber(row.total) }}</td>
                                         <td class="ui-col-number px-5 py-4 text-sm font-semibold text-blue-600">{{ formatNumber(row.new) }}</td>
                                         <td class="ui-col-number px-5 py-4 text-sm font-semibold text-green-600">{{ formatNumber(row.updated) }}</td>
@@ -1561,7 +1561,7 @@
                                         <td class="ui-col-datetime px-5 py-4 text-sm text-slate-500">{{ row.lastUpdate }}</td>
                                     </tr>
                                     <tr v-if="accessOverviewObjectType==='house' && accessLinkedRows[row.sourceName] && accessLinkedRows[row.sourceName].total>0" class="access-source-linked">
-                                        <td class="ui-col-name px-5 py-3 text-sm text-slate-600 whitespace-nowrap" title="存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源"><span class="access-source-child-label"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 2v7a3 3 0 0 0 3 3h7M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>安家顾问关联上架房源</span></td>
+                                        <td class="ui-col-name px-5 py-3 text-sm text-slate-600 whitespace-nowrap" title="安家顾问关联状态为已关联的房源，取消关联不计入，每7日自动采集来源并更新业务房源"><span class="access-source-child-label"><svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 2v7a3 3 0 0 0 3 3h7M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"></path></svg>安家顾问关联上架房源</span></td>
                                         <td class="ui-col-frequency px-5 py-3 text-xs text-slate-500" title="每7日自动采集来源并更新业务房源">每7日更新</td>
                                         <td class="ui-col-number px-5 py-3 text-xs font-medium text-slate-600">{{ formatNumber(accessLinkedRows[row.sourceName].total) }}</td>
                                         <td class="ui-col-number px-5 py-3 text-xs font-medium text-slate-600">{{ formatNumber(accessLinkedRows[row.sourceName].new) }}</td>
@@ -1675,7 +1675,7 @@
                         <div class="text-sm font-medium text-slate-500">在库上架房源</div>
                         <div class="mt-2 text-3xl font-bold text-slate-900">{{ formatNumber(bizBoardTotals.validHouses) }}<span class="ml-1 text-sm font-normal text-slate-400">套</span></div>
                                             </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left" title="统计挂牌状态为上架且存在有效安家顾问关联的业务房源">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left" title="统计挂牌状态为上架且安家顾问关联状态为已关联的业务房源，取消关联不计入；同一房源去重统计">
                         <div class="text-sm font-medium text-slate-500">安家顾问关联上架房源</div>
                         <div class="mt-2 text-3xl font-bold text-slate-900">{{ formatNumber(bizBoardTotals.advisorLinked) }}<span class="ml-1 text-sm font-normal text-slate-400">套</span></div>
                                             </div>
@@ -1759,7 +1759,7 @@
                     <div class="ui-table-scroll">
                         <table class="ui-table ui-source-table divide-y divide-slate-200">
                             <thead class="bg-slate-50"><tr><th class="ui-col-name px-5 py-3 text-left text-xs font-medium text-slate-500">来源名称</th><th class="ui-col-status px-5 py-3 text-left text-xs font-medium text-slate-500">对象类型</th><th class="px-5 py-3 text-left text-xs font-medium text-slate-500 min-w-[300px]">覆盖城市</th><th class="ui-col-frequency px-5 py-3 text-left text-xs font-medium text-slate-500">更新频率</th><th class="ui-col-datetime px-5 py-3 text-left text-xs font-medium text-slate-500">最近更新时间</th><th class="ui-col-status px-5 py-3 text-left text-xs font-medium text-slate-500">状态</th></tr></thead>
-                            <tbody class="divide-y divide-slate-200 bg-white"><tr v-for="item in accessSourceList" :key="item.id" class="hover:bg-slate-50"><td class="ui-col-name px-5 py-4 text-sm font-medium text-slate-900">{{ item.name }}</td><td class="ui-col-status px-5 py-4 text-sm text-slate-600">{{ item.type }}</td><td class="px-5 py-4 text-sm text-slate-600 min-w-[300px]">{{ item.cities }}</td><td class="ui-col-frequency px-5 py-4 text-sm text-slate-600" :title="['安居客房源','贝壳房源'].includes(item.name)?'存在有效安家顾问关联的房源，每7日自动采集来源并更新业务房源':item.freq">{{ item.freq }}</td><td class="ui-col-datetime px-5 py-4 text-sm text-slate-500">{{ item.lastUpdate }}</td><td class="ui-col-status px-5 py-4 text-sm"><span :class="item.status === '启用' ? 'text-green-600' : 'text-slate-400'">{{ item.status }}</span></td></tr></tbody>
+                            <tbody class="divide-y divide-slate-200 bg-white"><tr v-for="item in accessSourceList" :key="item.id" class="hover:bg-slate-50"><td class="ui-col-name px-5 py-4 text-sm font-medium text-slate-900">{{ item.name }}</td><td class="ui-col-status px-5 py-4 text-sm text-slate-600">{{ item.type }}</td><td class="px-5 py-4 text-sm text-slate-600 min-w-[300px]">{{ item.cities }}</td><td class="ui-col-frequency px-5 py-4 text-sm text-slate-600" :title="['安居客房源','贝壳房源'].includes(item.name)?'安家顾问关联状态为已关联的房源，取消关联不计入，每7日自动采集来源并更新业务房源':item.freq">{{ item.freq }}</td><td class="ui-col-datetime px-5 py-4 text-sm text-slate-500">{{ item.lastUpdate }}</td><td class="ui-col-status px-5 py-4 text-sm"><span :class="item.status === '启用' ? 'text-green-600' : 'text-slate-400'">{{ item.status }}</span></td></tr></tbody>
                         </table>
                     </div>
                 </panel>
@@ -5994,7 +5994,7 @@ window.housingDataVm = createApp({
             const selectedRows=this.accessTrendSource==='全部来源'
                 ? allRows
                 : allRows.filter(item=>item.sourceName===this.accessTrendSource);
-            const dateText=this.accessMonitorView==='detail' ? '2026-11-23' : String(this.accessCurrentOverview.snapshotAt || '2026-11-24').slice(0,10);
+            const dateText=String(this.accessCurrentOverview.snapshotAt || '2026-11-24').slice(0,10);
             const [year,month,day]=dateText.split('-').map(Number);
             const endDate=new Date(Date.UTC(year,month-1,day));
             const dates=Array.from({length:30},(_,index)=>{
@@ -6189,7 +6189,7 @@ window.housingDataVm = createApp({
             this.accessOverviewTableByObject.house.forEach(row=>{
                 const rows=this.accessRegionData[row.sourceName]||[];
                 const sum=key=>rows.reduce((n,item)=>n+item[key],0);
-                row.new=sum('newHouses')+18;row.updated=sum('updatedHouses')+42;row.total=sum('validHouses')+row.new;
+                row.new=sum('newHouses');row.updated=sum('updatedHouses');row.total=sum('validHouses');
                 row.lastUpdate='2026-11-24 10:00:00';
                 const denominator=this.dashDenominators.find(item=>item.sourceName===row.sourceName);
                 if(denominator){denominator.collected=row.total;denominator.denominator=Math.ceil(row.total/0.87/1000)*1000}
@@ -6226,7 +6226,7 @@ window.housingDataVm = createApp({
             })]));
             sample.accessOverviewTableByObject.house.forEach(row=>{
                 const rows=sample.accessRegionData[row.sourceName];
-                row.new=rows.reduce((sum,item)=>sum+item.newHouses,0)+18;row.updated=rows.reduce((sum,item)=>sum+item.updatedHouses,0)+42;row.total=rows.reduce((sum,item)=>sum+item.validHouses,0)+row.new
+                row.new=rows.reduce((sum,item)=>sum+item.newHouses,0);row.updated=rows.reduce((sum,item)=>sum+item.updatedHouses,0);row.total=rows.reduce((sum,item)=>sum+item.validHouses,0)
             });
             sample.fieldPerfSourceStats=Object.fromEntries(sources.map(source=>{const raw=base.fieldPerfSourceStats[source];return [source,{total:Math.round(raw.total*factor),advisorLinked:Math.round(raw.advisorLinked*factor)}]}));
             sample.accessLinkedRows=Object.fromEntries(Object.entries(sample.accessLinkedRows).filter(([source])=>sources.includes(source)).map(([source,row])=>[source,scaleRow(row)]));

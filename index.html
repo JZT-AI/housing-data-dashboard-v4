@@ -1582,9 +1582,9 @@
                         </div>
                         <form @submit.prevent="applyAccessRegionSearch" class="flex flex-wrap items-end gap-3 border-b border-slate-100 px-5 py-4">
                             <label class="text-xs text-slate-500">行政区<input v-model="accessRegionKeywordDraft" @input="accessBlockKeywordDraft=''" list="access-districts" aria-label="来源明细行政区" placeholder="搜索行政区" class="mt-2 block h-9 w-44 rounded-md border border-slate-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"></label>
-                            <datalist id="access-districts"><option v-for="row in accessRegionData[accessRegionSource]||[]" :key="row.region" :value="row.region"></option></datalist>
+                            <datalist id="access-districts"><option v-for="row in accessRegionVisibleData" :key="row.region" :value="row.region"></option></datalist>
                             <label class="text-xs text-slate-500">板块<input v-model="accessBlockKeywordDraft" list="access-blocks" aria-label="来源明细板块" placeholder="搜索板块" class="mt-2 block h-9 w-52 rounded-md border border-slate-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"></label>
-                            <datalist id="access-blocks"><template v-for="row in accessRegionData[accessRegionSource]||[]" :key="row.region"><option v-for="block in row.blocks" :key="row.region+block.block" :value="block.block" :label="row.region+' / '+block.block"></option></template></datalist>
+                            <datalist id="access-blocks"><template v-for="row in accessRegionVisibleData" :key="row.region"><option v-for="block in row.blocks" :key="row.region+block.block" :value="block.block" :label="row.region+' / '+block.block"></option></template></datalist>
                             <button type="submit" class="h-9 rounded-md bg-indigo-600 px-4 text-sm font-medium text-white hover:bg-indigo-700">查询</button>
                             <button type="button" @click="resetAccessRegionSearch" class="h-9 rounded-md border border-slate-300 px-4 text-sm text-slate-600 hover:bg-slate-50">重置</button>
                             <span class="pb-2 text-xs text-slate-500">当前范围：{{ accessRegionSearchLabel }}</span>
@@ -1595,25 +1595,25 @@
                                 <tbody class="divide-y divide-slate-200 bg-white">
                                     <tr v-if="accessRegionRows.length" @click="resetAccessTrend" class="bg-indigo-50/50 cursor-pointer hover:bg-indigo-100/50">
                                         <td class="px-5 py-3.5 text-sm font-semibold text-indigo-800">{{ accessRegionSource }} · 全部行政区</td>
-                                        <td class="px-5 py-3.5 text-center text-sm font-semibold">{{ formatNumber(accessRegionTotal.validHouses) }}</td>
-                                        <td class="px-5 py-3.5 text-center text-sm font-semibold text-blue-600">{{ formatNumber(accessRegionTotal.newHouses) }}</td>
-                                        <td class="px-5 py-3.5 text-center text-sm font-semibold text-green-600">{{ formatNumber(accessRegionTotal.updatedHouses) }}</td>
+                                        <td class="px-5 py-3.5 text-center text-sm font-semibold">{{ formatAccessQuantity(accessRegionTotal.validHouses) }}</td>
+                                        <td class="px-5 py-3.5 text-center text-sm font-semibold text-blue-600">{{ formatAccessQuantity(accessRegionTotal.newHouses) }}</td>
+                                        <td class="px-5 py-3.5 text-center text-sm font-semibold text-green-600">{{ formatAccessQuantity(accessRegionTotal.updatedHouses) }}</td>
                                     </tr>
                                     <template v-for="row in accessRegionRows" :key="accessRegionSource+row.region">
                                         <tr @click="toggleAccessRegion(row.region)" class="hover:bg-slate-50 cursor-pointer" :class="accessTrendRegion===row.region && !accessTrendBlock ? 'bg-indigo-50/50' : ''">
                                             <td class="px-5 py-3.5 text-sm font-semibold text-slate-900 whitespace-nowrap"><svg v-if="row.blocks.length" :class="(accessExpandedRegions[row.region] || accessBlockKeyword) ? 'rotate-90' : ''" class="mr-1.5 inline-block w-3.5 h-3.5 text-slate-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 5 7 7-7 7"></path></svg>{{ row.region }}<span class="ml-2 text-xs font-normal text-slate-400">{{ row.blocks.length }} 个板块</span></td>
-                                            <td class="px-5 py-3.5 text-center text-sm font-semibold text-slate-900">{{ formatNumber(row.validHouses) }}</td>
-                                            <td class="px-5 py-3.5 text-center text-sm font-semibold text-blue-600">{{ formatNumber(row.newHouses) }}</td><td class="px-5 py-3.5 text-center text-sm font-semibold text-green-600">{{ formatNumber(row.updatedHouses) }}</td>
+                                            <td class="px-5 py-3.5 text-center text-sm font-semibold text-slate-900">{{ formatAccessQuantity(row.validHouses) }}</td>
+                                            <td class="px-5 py-3.5 text-center text-sm font-semibold text-blue-600">{{ formatAccessQuantity(row.newHouses) }}</td><td class="px-5 py-3.5 text-center text-sm font-semibold text-green-600">{{ formatAccessQuantity(row.updatedHouses) }}</td>
                                         </tr>
                                         <tr v-for="b in row.blocks" v-show="accessExpandedRegions[row.region] || accessBlockKeyword" :key="row.region+b.block" @click.stop="accessTrendRegion=row.region; accessTrendBlock=b.block" class="bg-slate-50/60 cursor-pointer hover:bg-indigo-50/40" :class="accessTrendBlock===b.block && accessTrendRegion===row.region ? 'bg-indigo-50/60' : ''">
                                             <td class="px-5 py-3 text-sm text-slate-600 whitespace-nowrap"><span class="mr-1.5 inline-block w-3.5"></span>{{ b.block }}</td>
-                                            <td class="px-5 py-3 text-center text-sm text-slate-700">{{ formatNumber(b.validHouses) }}</td>
-                                            <td class="px-5 py-3 text-center text-sm text-blue-600">{{ formatNumber(b.newHouses) }}</td><td class="px-5 py-3 text-center text-sm text-green-600">{{ formatNumber(b.updatedHouses) }}</td>
+                                            <td class="px-5 py-3 text-center text-sm text-slate-700">{{ formatAccessQuantity(b.validHouses) }}</td>
+                                            <td class="px-5 py-3 text-center text-sm text-blue-600">{{ formatAccessQuantity(b.newHouses) }}</td><td class="px-5 py-3 text-center text-sm text-green-600">{{ formatAccessQuantity(b.updatedHouses) }}</td>
                                         </tr>
                                     </template>
                                 </tbody>
                             </table>
-                            <div v-if="!accessRegionRows.length" class="py-12 text-center text-sm text-slate-400">没有符合条件的行政区 / 板块，请调整搜索或切换来源</div>
+                            <div v-if="!accessRegionRows.length" class="py-12 text-center text-sm text-slate-400">{{ accessRegionEmptyText }}</div>
                         </div>
                         </template>
                         <div v-else class="mx-5 my-5 flex h-32 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">分行政区 / 板块明细仅支持房源对象</div>
@@ -4388,23 +4388,27 @@ window.housingDataVm = createApp({
             return this.accessOverviewObjectOptions.find(item=>item.value===this.accessOverviewObjectType)?.label || '房源'
         },
         accessRegionSourceOptions(){return Object.keys(this.accessRegionData)},
+        accessRegionVisibleData(){
+            return (this.accessRegionData[this.accessRegionSource]||[])
+                .filter(row=>!this.isZeroAccessQuantity(row.validHouses))
+                .map(row=>({...row,blocks:(row.blocks||[]).filter(block=>!this.isZeroAccessQuantity(block.validHouses)).sort((a,b)=>Number(b.validHouses||0)-Number(a.validHouses||0))}))
+        },
         accessRegionTotal(){
             const rows=this.accessRegionData[this.accessRegionSource]||[];
-            return Object.fromEntries(['validHouses','newHouses','updatedHouses'].map(key=>[key,rows.reduce((n,row)=>n+row[key],0)]))
+            return Object.fromEntries(['validHouses','newHouses','updatedHouses'].map(key=>[key,rows.some(row=>!this.isKnownAccessQuantity(row[key]))?null:rows.reduce((n,row)=>n+Number(row[key]),0)]))
         },
         accessRegionSearchLabel(){
             return [this.accessRegionKeyword?'行政区含「'+this.accessRegionKeyword+'」':'',this.accessBlockKeyword?'板块含「'+this.accessBlockKeyword+'」':''].filter(Boolean).join(' / ')||'全部行政区 / 板块'
         },
         accessRegionRows(){
-            const rows=(this.accessRegionData[this.accessRegionSource]||[])
+            return this.accessRegionVisibleData
                 .filter(row=>!this.accessRegionKeyword || row.region.includes(this.accessRegionKeyword.trim()))
-                .map(row=>({
-                    ...row,
-                    blocks:(row.blocks||[]).filter(b=>!this.accessBlockKeyword || b.block.includes(this.accessBlockKeyword.trim())).sort((a,b)=>b.validHouses-a.validHouses)
-                }))
+                .map(row=>({...row,blocks:row.blocks.filter(b=>!this.accessBlockKeyword || b.block.includes(this.accessBlockKeyword.trim()))}))
                 .filter(row=>!this.accessBlockKeyword || row.blocks.length)
-                .sort((a,b)=>b.validHouses-a.validHouses);
-            return rows
+                .sort((a,b)=>Number(b.validHouses||0)-Number(a.validHouses||0))
+        },
+        accessRegionEmptyText(){
+            return this.accessRegionKeyword||this.accessBlockKeyword ? '没有符合条件且有有效房源的行政区 / 板块，请调整搜索或切换来源' : '当前来源暂无有效房源的行政区 / 板块，请切换来源或城市查看'
         },
         bizBoardTotals(){
             const stats=this.fieldPerfSource==='全部来源' ? Object.values(this.fieldPerfSourceStats) : [this.fieldPerfSourceStats[this.fieldPerfSource]].filter(Boolean);
@@ -6008,14 +6012,16 @@ window.housingDataVm = createApp({
                 const region=rows.find(item=>item.region===this.accessTrendRegion);
                 const block=region?.blocks.find(item=>item.block===this.accessTrendBlock);
                 const target=block||region;
-                const baseNew=target ? target.newHouses : rows.reduce((n,item)=>n+item.newHouses,0);
-                const baseUpdated=target ? target.updatedHouses : rows.reduce((n,item)=>n+item.updatedHouses,0);
+                const baseNew=target ? target.newHouses : this.accessRegionTotal.newHouses;
+                const baseUpdated=target ? target.updatedHouses : this.accessRegionTotal.updatedHouses;
                 const newSeries=dates.map((_,index)=>{
-                    if(index===29) return baseNew;
+                    if(!this.isKnownAccessQuantity(baseNew))return null;
+                    if(index===29) return Number(baseNew);
                     return Math.max(0,Math.round(baseNew*(0.86+Math.sin((index+2)*0.7)*0.16+((index*11)%5-2)*0.04)))
                 });
                 const updateSeries=dates.map((_,index)=>{
-                    if(index===29) return baseUpdated;
+                    if(!this.isKnownAccessQuantity(baseUpdated))return null;
+                    if(index===29) return Number(baseUpdated);
                     return Math.max(0,Math.round(baseUpdated*(0.9+Math.cos((index+1)*0.59)*0.13+((index*7)%5-2)*0.035)))
                 });
                 return {labels,newSeries,updateSeries}
@@ -6254,9 +6260,26 @@ window.housingDataVm = createApp({
             this.accessExpandedRegions={};this.resetAccessTrend();this.$nextTick(()=>this.renderAccessOverviewChart())
         },
         resetAccessTrend(){this.accessTrendRegion='';this.accessTrendBlock=''},
+        isKnownAccessQuantity(value){return (typeof value==='number'||typeof value==='string'&&value.trim()!=='')&&Number.isFinite(Number(value))},
+        isZeroAccessQuantity(value){return this.isKnownAccessQuantity(value)&&Number(value)===0},
+        formatAccessQuantity(value){return this.isKnownAccessQuantity(value)?this.formatNumber(Number(value)):'—'},
+        reconcileAccessRegionSelection(){
+            const visible=this.accessRegionVisibleData;
+            this.accessExpandedRegions=Object.fromEntries(Object.entries(this.accessExpandedRegions).filter(([name])=>visible.some(row=>row.region===name)));
+            if(!this.accessTrendRegion)return;
+            const region=visible.find(row=>row.region===this.accessTrendRegion);
+            if(!region || this.accessTrendBlock&&!region.blocks.some(block=>block.block===this.accessTrendBlock)){
+                const raw=(this.accessRegionData[this.accessRegionSource]||[]).find(row=>row.region===this.accessTrendRegion);
+                const rawBlock=(raw?.blocks||[]).find(block=>block.block===this.accessTrendBlock);
+                const confirmedZero=this.isZeroAccessQuantity(raw?.validHouses)||this.isZeroAccessQuantity(rawBlock?.validHouses);
+                this.resetAccessTrend();
+                if(confirmedZero)this.toast('该位置当前无有效房源，已不在明细中展示')
+            }
+        },
         toggleAccessRegion(region){
-            const row=(this.accessRegionData[this.accessRegionSource]||[]).find(item=>item.region===region);
-            if(!row?.blocks.length){this.accessTrendRegion=region;this.accessTrendBlock='';return}
+            const row=this.accessRegionVisibleData.find(item=>item.region===region);
+            if(!row)return;
+            if(!row.blocks.length){this.accessTrendRegion=region;this.accessTrendBlock='';return}
             const opening=!(this.accessExpandedRegions[region] || this.accessBlockKeyword);
             if(this.accessBlockKeyword){this.accessBlockKeyword='';this.accessBlockKeywordDraft=''}
             this.accessExpandedRegions={...this.accessExpandedRegions,[region]:opening};
@@ -7038,6 +7061,7 @@ window.housingDataVm = createApp({
         toast(text){this.toastText=text; setTimeout(()=>this.toastText='',1800)}
     },
     watch:{
+        accessRegionVisibleData:{deep:true,handler(){this.reconcileAccessRegionSelection();this.$nextTick(()=>this.renderAccessOverviewChart())}},
         fieldPerfSource(){this.clearFieldPerfLocation()},
         accessOverviewObjectType(){
             this.accessMonitorView='overview';

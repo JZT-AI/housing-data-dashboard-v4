@@ -1528,9 +1528,9 @@
                         <div v-if="accessOverviewObjectType==='house'" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                             <div class="flex items-center justify-between gap-2">
                                 <div class="text-sm font-medium text-slate-500 whitespace-nowrap">渠道采集率</div>
-                                <button v-if="currentCity==='西安市'" @click="openDashDenominators()" class="text-xs text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap">分母维护</button>
+                                <button v-if="dashDenominators.length" @click="openDashDenominators()" class="text-xs text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap">分母维护</button>
                             </div>
-                            <div class="mt-2 text-3xl font-bold text-indigo-600">{{ dashChannelRate }}</div><div class="mt-2 text-xs text-slate-500">已填写分母 {{ currentCity!=='西安市' ? 0 : dashRateDenominators.filter(item=>Number(item.denominator)>0).length }} / {{ dashRateDenominators.length }} 个来源</div>
+                            <div class="mt-2 text-3xl font-bold text-indigo-600">{{ dashChannelRate }}</div><div class="mt-2 text-xs text-slate-500">已填写分母 {{ dashRateDenominators.filter(item=>Number(item.denominator)>0).length }} / {{ dashRateDenominators.length }} 个来源</div>
                         </div>
                         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
                             <div class="text-sm font-medium text-slate-500">近7日告警数</div>
@@ -1571,9 +1571,10 @@
                                     </tr>
                             </tbody>
                         </table>
+                        <div v-if="!accessCurrentOverviewTable.length" class="py-12 text-center text-sm text-slate-400">当前城市暂无可用来源统计，请切换城市查看</div>
                     </div>
                     <template v-else>
-                        <template v-if="currentCity==='西安市' && accessOverviewObjectType==='house'">
+                        <template v-if="accessOverviewObjectType==='house'">
                         <div class="flex flex-wrap items-center gap-3 px-5 pt-4">
                             <div class="inline-flex flex-wrap rounded-lg bg-slate-100 p-1">
                                 <button v-for="src in accessRegionSourceOptions" :key="src" @click="accessRegionSource=src" :class="accessRegionSource===src ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'" class="whitespace-nowrap rounded-md px-4 py-1.5 text-sm font-medium transition-colors">{{ src }}</button>
@@ -1615,7 +1616,7 @@
                             <div v-if="!accessRegionRows.length" class="py-12 text-center text-sm text-slate-400">没有符合条件的行政区 / 板块，请调整搜索或切换来源</div>
                         </div>
                         </template>
-                        <div v-else class="mx-5 my-5 flex h-32 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">{{ accessOverviewObjectType==='house' ? '本期分行政区 / 板块明细仅覆盖西安市，请切换到西安市查看' : '分行政区 / 板块明细仅支持房源对象' }}</div>
+                        <div v-else class="mx-5 my-5 flex h-32 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">分行政区 / 板块明细仅支持房源对象</div>
                     </template>
                 </panel>
                 <panel title="近30天趋势">
@@ -1669,7 +1670,7 @@
                         </div>
                     </div>
                 </div>
-                <div v-if="currentCity==='西安市'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 text-left">
                         <div class="text-sm font-medium text-slate-500">在库上架房源</div>
                         <div class="mt-2 text-3xl font-bold text-slate-900">{{ formatNumber(bizBoardTotals.validHouses) }}<span class="ml-1 text-sm font-normal text-slate-400">套</span></div>
@@ -1680,8 +1681,7 @@
                                             </div>
 </div>
                 <panel title="字段填充率">
-                    <template #action><span class="text-xs text-slate-500 whitespace-nowrap">业务对象数据 · T+1 · 数据日期 2026-11-23</span></template>
-                    <template v-if="currentCity==='西安市'">
+                    <template #action><span class="text-xs text-slate-500 whitespace-nowrap">{{ currentCity }} · 业务对象数据 · T+1 · 数据日期 2026-11-23</span></template>
                     <form @submit.prevent="applyFieldPerfLocation" class="flex flex-wrap items-end gap-3 border-b border-slate-100 px-5 py-4">
                         <label class="text-xs text-slate-500">行政区<input v-model="fieldPerfDistrictDraft" :disabled="!fieldPerfLocationEnabled" :aria-describedby="fieldPerfLocationHint ? 'field-location-hint' : null" @input="fieldPerfBlockDraft='';fieldPerfLocationError=''" list="coverage-districts" aria-label="填充率行政区" :placeholder="fieldPerfSource==='全部来源' ? '先选择来源' : '搜索行政区'" class="mt-2 block h-9 w-44 rounded-md border border-slate-300 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"></label>
                         <datalist id="coverage-districts"><option v-for="loc in fieldPerfLocations" :key="loc.district" :value="loc.district"></option></datalist>
@@ -1722,11 +1722,14 @@
                     <div class="border-t border-slate-100 px-5 pb-5">
                         <div class="flex flex-wrap items-center justify-between gap-3 py-4">
                             <div class="text-sm font-semibold text-slate-800">{{ fieldPerfCategory }} <span class="ml-1 text-xs font-normal text-slate-400">共 {{ (fieldPerfFields[fieldPerfCategory]||[]).length }} 个字段 · {{ fieldPerfSource }} · {{ fieldPerfLocationLabel }}</span></div>
-                            <div v-if="fieldPerfCommonTotal!==null" class="text-xs text-slate-500">总房源量 <span class="ml-1 font-semibold tabular-nums text-slate-700">{{ formatNumber(fieldPerfCommonTotal) }}</span></div>
+                            <div class="flex flex-wrap items-center gap-4">
+                                <div v-if="fieldPerfCommonTotal!==null" class="text-xs text-slate-500">总房源量 <span class="ml-1 font-semibold tabular-nums text-slate-700">{{ formatNumber(fieldPerfCommonTotal) }}</span></div>
+                                <button type="button" @click="fieldPerfSortDirection=fieldPerfSortDirection==='desc'?'asc':'desc'" :aria-label="`填充率排序，当前${fieldPerfSortDirection==='desc'?'由高到低':'由低到高'}，点击切换为${fieldPerfSortDirection==='desc'?'由低到高':'由高到低'}`" class="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"><span aria-hidden="true" class="text-base leading-none">{{ fieldPerfSortDirection==='desc'?'↓':'↑' }}</span>填充率 {{ fieldPerfSortDirection==='desc'?'由高到低':'由低到高' }}</button>
+                            </div>
                         </div>
                         <div class="ui-table-scroll border border-slate-200 rounded-lg">
                             <table class="ui-table divide-y divide-slate-200">
-                                <thead class="bg-slate-50"><tr><th class="px-5 py-3 text-left text-xs font-medium text-slate-500">字段名称</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">有值房源量</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">昨日新增有值房源量</th><th class="px-5 py-3 text-left text-xs font-medium text-slate-500 min-w-[180px]">填充率</th></tr></thead>
+                                <thead class="bg-slate-50"><tr><th class="px-5 py-3 text-left text-xs font-medium text-slate-500">字段名称</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">有值房源量</th><th class="px-5 py-3 text-center text-xs font-medium text-slate-500">昨日新增有值房源量</th><th :aria-sort="fieldPerfSortDirection==='desc'?'descending':'ascending'" class="px-5 py-3 text-left text-xs font-medium text-slate-500 min-w-[180px]">填充率</th></tr></thead>
                                 <tbody class="divide-y divide-slate-200 bg-white"><tr v-for="field in fieldPerfActiveRows" :key="fieldPerfCategory+field.name" @click="fieldPerfTrendName=field.name" :class="fieldPerfTrendName===field.name ? 'bg-indigo-50/60' : 'hover:bg-slate-50'" class="cursor-pointer"><td class="px-5 py-3 text-sm font-medium whitespace-nowrap"><button @click="fieldPerfTrendName=field.name" :class="fieldPerfTrendName===field.name ? 'text-indigo-700 font-bold' : 'text-slate-900'" class="rounded-sm text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400">{{ field.name }}</button></td><td class="px-5 py-3 text-center text-sm text-slate-700">{{ formatNumber(field.valid) }}</td><td class="px-5 py-3 text-center text-sm font-semibold text-blue-600">{{ formatNumber(field.yesterdayNew) }}</td><td class="px-5 py-3"><div class="flex items-center gap-2"><div class="h-1.5 w-24 rounded-full bg-slate-100"><div class="coverage-field-bar h-1.5 rounded-full" :style="{width:field.rate+'%',background:'linear-gradient(90deg, '+coverageRingTone(field.rate).light+' 0%, '+coverageRingTone(field.rate).base+' 60%, '+coverageRingTone(field.rate).deep+' 100%)'}"></div></div><span class="text-sm font-semibold text-slate-900">{{ field.rate.toFixed(1) }}%</span></div><div v-if="fieldPerfCommonTotal===null" class="mt-1 text-xs text-slate-500">总房源量 {{ formatNumber(field.total) }}</div></td></tr></tbody>
                             </table>
                             <div v-if="!fieldPerfActiveRows.length" class="py-12 text-center text-sm text-slate-400">当前来源下暂无该分类的字段统计数据</div>
@@ -1739,12 +1742,10 @@
                                 </div>
 
                             </div>
-                            <div class="mt-2 flex flex-wrap gap-5 text-xs text-slate-500"><span>{{ fieldPerfSource }} · {{ fieldPerfLocationLabel }}</span><span>10-25 至 11-23</span></div>
+                            <div class="mt-2 flex flex-wrap gap-5 text-xs text-slate-500"><span>{{ currentCity }} · {{ fieldPerfSource }} · {{ fieldPerfLocationLabel }}</span><span>10-25 至 11-23</span></div>
                             <trend-field-picker class="mt-4" v-model="fieldPerfTrendName" :options="fieldPerfTrendOptions"></trend-field-picker><div v-if="fieldPerfActiveRows.length" class="mt-3 h-64"><canvas id="fieldPerfTrendChart" role="img" :aria-label="`${fieldPerfTrendSeries.target}近30日填充率趋势图`"></canvas></div><div v-else class="mt-3 flex h-48 items-center justify-center rounded-lg bg-slate-50 text-sm text-slate-500">当前范围暂无填充率趋势数据</div>
                         </div>
                     </div>
-                    </template>
-                    <div v-else class="mx-5 my-5 flex h-32 items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 text-sm text-slate-500">本期字段填充率仅覆盖西安市，请切换到西安市查看</div>
                 </panel>
                 
             </section>
@@ -3694,6 +3695,7 @@ window.housingDataVm = createApp({
             accessOverviewObjectType:'house',
             dashDenominatorOpen:false, dashDenominatorError:'', dashDenominatorDraft:[], dashRateDenominators:[], accessTrendRegion:'', accessTrendBlock:'',
             accessMonitorView:'overview', accessRegionSource:'贝壳房源', accessRegionKeyword:'', accessBlockKeyword:'', accessRegionKeywordDraft:'', accessBlockKeywordDraft:'', accessExpandedRegions:{},
+            dashboardCitySamples:{}, dashboardSampleCity:'西安市',
             dashDenominators:[
                 {sourceName:'贝壳房源',collected:52310,denominator:62000,updatedBy:'平台管理员',updatedAt:'2026-11-20 10:24'},
                 {sourceName:'安居客房源',collected:38920,denominator:41000,updatedBy:'平台管理员',updatedAt:'2026-11-20 10:24'},
@@ -3725,7 +3727,7 @@ window.housingDataVm = createApp({
                     {region:'临潼区',validHouses:2140,advisorLinked:620,newHouses:12,rate:76.42,blocks:[{block:'骊山',validHouses:1480,advisorLinked:440,newHouses:8,rate:77.15},{block:'斜口',validHouses:660,advisorLinked:180,newHouses:4,rate:74.80}]}
                 ]
             },
-            fieldPerfCategory:'基本信息', fieldPerfSource:'全部来源',
+            fieldPerfCategory:'基本信息', fieldPerfSource:'全部来源', fieldPerfSortDirection:'desc',
             fieldPerfDistrict:'',fieldPerfBlock:'',fieldPerfDistrictDraft:'',fieldPerfBlockDraft:'',fieldPerfLocationError:'',
             fieldPerfSourceStats:{
                 '贝壳房源':{total:52742,advisorLinked:22000},
@@ -4409,7 +4411,6 @@ window.housingDataVm = createApp({
             return {validHouses:stats.reduce((n,row)=>n+Number(row.total||0),0),advisorLinked:stats.reduce((n,row)=>n+Number(row.advisorLinked||0),0)}
         },
         dashChannelRate(){
-            if(this.currentCity!=='西安市') return '—';
             const maintained=this.dashRateDenominators.filter(item=>Number(item.denominator)>0);
             const denominator=maintained.reduce((n,item)=>n+Number(item.denominator),0);
             if(!denominator) return '—';
@@ -4418,7 +4419,7 @@ window.housingDataVm = createApp({
         },
         fieldPerfSourceOptions(){return ['全部来源',...Object.keys(this.fieldPerfSourceStats)]},
         fieldPerfLocations(){
-            if(this.fieldPerfSource==='全部来源'||this.currentCity!=='西安市')return [];
+            if(this.fieldPerfSource==='全部来源')return [];
             // Source-scoped snapshot response mock. New positions enter candidates through data updates.
             const rows=this.accessRegionData[this.fieldPerfSource]||[];
             const total=rows.reduce((n,row)=>n+Number(row.validHouses||0),0);
@@ -4483,7 +4484,7 @@ window.housingDataVm = createApp({
             return {labels,series,target}
         },
         accessCurrentOverview(){
-            const stats=this.accessOverviewStats[this.accessOverviewObjectType];if(this.accessOverviewObjectType!=='house')return stats;const rows=this.accessCurrentOverviewTable;return {...stats,total:rows.reduce((n,r)=>n+r.total,0),newToday:rows.reduce((n,r)=>n+r.new,0),updatedToday:rows.reduce((n,r)=>n+r.updated,0),snapshotAt:'2026-11-24 10:00'}
+            const stats=this.accessOverviewStats[this.accessOverviewObjectType];const rows=this.accessCurrentOverviewTable;return {...stats,total:rows.reduce((n,r)=>n+r.total,0),newToday:rows.reduce((n,r)=>n+r.new,0),updatedToday:rows.reduce((n,r)=>n+r.updated,0),snapshotAt:this.accessOverviewObjectType==='house'?'2026-11-24 10:00':stats.snapshotAt}
         },
         accessCurrentOverviewTable(){
             return (this.accessOverviewTableByObject[this.accessOverviewObjectType] || []).filter(row=>!row.cities||row.cities.includes(this.currentCity))
@@ -4495,13 +4496,13 @@ window.housingDataVm = createApp({
             if(this.accessMonitorView==='detail'){
                 return [this.currentCity,this.accessRegionSource,this.accessTrendRegion || '全部行政区',this.accessTrendBlock].filter(Boolean).join(' · ')
             }
-            return this.accessTrendSource || '全部来源'
+            return this.currentCity+' · '+(this.accessTrendSource || '全部来源')
         },
         accessTrendLegend(){
             return ['新增量','更新量']
         },
         accessTrendHasData(){
-            if(this.accessMonitorView==='detail') return this.currentCity==='西安市' && this.accessOverviewObjectType==='house' && this.accessRegionRows.length>0;
+            if(this.accessMonitorView==='detail') return this.accessOverviewObjectType==='house' && this.accessRegionRows.length>0;
             return this.accessCurrentOverviewTable.length>0
         },
         accessHouseSourceOptions(){
@@ -6174,7 +6175,7 @@ window.housingDataVm = createApp({
                     total+=count;valid+=Math.round(count*rate/100)
                 });
                 return {name,total,valid,yesterdayNew:Math.round(valid*(0.006+(index%4)*0.001)),rate:total?valid/total*100:0}
-            }).sort((a,b)=>b.rate-a.rate)
+            }).sort((a,b)=>this.fieldPerfSortDirection==='asc'?a.rate-b.rate:b.rate-a.rate)
         },
         initDashboardSamples(){
             const factors={'365房源':0.27,'辉达房源':0.16,'巧房房源':0.12};
@@ -6195,6 +6196,54 @@ window.housingDataVm = createApp({
             });
             this.accessOverviewTableByObject.house.sort((a,b)=>this.fieldPerfSourceOptions.indexOf(a.sourceName)-this.fieldPerfSourceOptions.indexOf(b.sourceName));
             this.dashRateDenominators=this.dashDenominators.map(row=>({...row}));
+            this.dashboardCitySamples[this.dashboardSampleCity]=this.captureDashboardCitySample();
+        },
+        captureDashboardCitySample(){
+            return {accessRegionData:this.accessRegionData,accessOverviewTableByObject:this.accessOverviewTableByObject,accessOverviewStats:this.accessOverviewStats,accessLinkedRows:this.accessLinkedRows,fieldPerfSourceStats:this.fieldPerfSourceStats,dashDenominators:this.dashDenominators,dashRateDenominators:this.dashRateDenominators}
+        },
+        buildDashboardCitySample(city){
+            // Illustrative city snapshots only. Production city/source/position options come from returned data.
+            const fixtures={
+                '南京市':[['鼓楼区',['龙江','中央门']],['建邺区',['奥体','河西南']],['江宁区',['百家湖','九龙湖']]],
+                '无锡市':[['滨湖区',['太湖新城','蠡湖']],['梁溪区',['崇安寺','北塘']],['新吴区',['旺庄','梅村']]],
+                '合肥市':[['蜀山区',['政务区','南七']],['包河区',['滨湖新区','望湖城']],['庐阳区',['四里河','杏林']]],
+                '苏州市':[['姑苏区',['平江新城','观前']],['吴中区',['木渎','越溪']],['相城区',['活力岛','元和']]],
+                '芜湖市':[['镜湖区',['赭山','汀棠']],['弋江区',['澛港','南瑞']],['鸠江区',['官陡','湾里']]]
+            };
+            const base=this.dashboardCitySamples['西安市'];
+            const sample=JSON.parse(JSON.stringify(base));
+            const positions=fixtures[city]||[];
+            const factor=0.58+Math.max(0,this.cities.indexOf(city))*0.17;
+            const quantities=['validHouses','advisorLinked','newHouses','updatedHouses'];
+            const scaleRow=row=>Object.fromEntries(Object.entries(row).map(([key,value])=>[key,['total','new','updated'].includes(key)?Math.round(value*factor):value]));
+            sample.accessOverviewTableByObject=Object.fromEntries(Object.entries(sample.accessOverviewTableByObject).map(([type,rows])=>[type,positions.length?rows.filter(row=>!row.cities||row.cities.includes(city)).map(scaleRow):[]]));
+            const sources=sample.accessOverviewTableByObject.house.map(row=>row.sourceName);
+            sample.accessRegionData=Object.fromEntries(sources.map(source=>[source,positions.map(([region,blocks],index)=>{
+                const raw=Object.fromEntries(quantities.map(key=>[key,(base.accessRegionData[source]||[]).reduce((sum,row)=>sum+Number(row[key]||0),0)]));
+                const ratio=(index+2)/9;
+                const record={region,blocks:blocks.map((block,j)=>{const item={block};quantities.forEach(key=>item[key]=Math.round(Number(raw?.[key]||0)*factor*ratio*(j===0?0.56:0.44)));return item})};
+                quantities.forEach(key=>record[key]=record.blocks.reduce((sum,item)=>sum+item[key],0));return record
+            })]));
+            sample.accessOverviewTableByObject.house.forEach(row=>{
+                const rows=sample.accessRegionData[row.sourceName];
+                row.new=rows.reduce((sum,item)=>sum+item.newHouses,0)+18;row.updated=rows.reduce((sum,item)=>sum+item.updatedHouses,0)+42;row.total=rows.reduce((sum,item)=>sum+item.validHouses,0)+row.new
+            });
+            sample.fieldPerfSourceStats=Object.fromEntries(sources.map(source=>{const raw=base.fieldPerfSourceStats[source];return [source,{total:Math.round(raw.total*factor),advisorLinked:Math.round(raw.advisorLinked*factor)}]}));
+            sample.accessLinkedRows=Object.fromEntries(Object.entries(sample.accessLinkedRows).filter(([source])=>sources.includes(source)).map(([source,row])=>[source,scaleRow(row)]));
+            sample.dashDenominators=sources.map(source=>{const collected=sample.accessOverviewTableByObject.house.find(row=>row.sourceName===source).total;return {sourceName:source,collected,denominator:Math.ceil(collected/0.86/1000)*1000,updatedBy:'平台管理员',updatedAt:'2026-11-24 10:00'}});
+            sample.dashRateDenominators=sample.dashDenominators.map(row=>({...row}));
+            Object.values(sample.accessOverviewStats).forEach(stats=>{stats.alarm7d=positions.length?Math.round(stats.alarm7d*factor):0});
+            return sample
+        },
+        switchDashboardCity(city){
+            this.dashboardCitySamples[this.dashboardSampleCity]=this.captureDashboardCitySample();
+            if(!this.dashboardCitySamples[city])this.dashboardCitySamples[city]=this.buildDashboardCitySample(city);
+            Object.assign(this,this.dashboardCitySamples[city]);
+            this.dashboardSampleCity=city;this.dashDenominatorOpen=false;this.dashDenominatorDraft=[];this.dashDenominatorError='';
+            this.resetAccessRegionSearch();this.accessTrendSource='全部来源';
+            this.accessRegionSource=this.accessRegionSourceOptions[0]||'';
+            this.clearFieldPerfLocation();
+            if(!this.fieldPerfSourceOptions.includes(this.fieldPerfSource))this.fieldPerfSource='全部来源';
         },
         applyAccessRegionSearch(){
             this.accessRegionKeyword=this.accessRegionKeywordDraft.trim();this.accessBlockKeyword=this.accessBlockKeywordDraft.trim();
@@ -6219,7 +6268,6 @@ window.housingDataVm = createApp({
             this.dashDenominatorOpen=true
         },
         dashSourceRate(name){
-            if(this.currentCity!=='西安市') return '—';
             const item=this.dashRateDenominators.find(entry=>entry.sourceName===name);
             if(!item || !Number(item.denominator)) return '—';
             return (Number(item.collected||0)/Number(item.denominator)*100).toFixed(1)+'%'
@@ -7004,7 +7052,7 @@ window.housingDataVm = createApp({
             this.accessRegionKeywordDraft='';this.accessBlockKeywordDraft='';this.accessRegionKeyword='';this.accessBlockKeyword='';this.accessExpandedRegions={};this.resetAccessTrend();
             this.$nextTick(()=>this.renderAccessOverviewChart())
         },
-        currentCity(){this.resetAccessTrend();this.clearFieldPerfLocation();this.$nextTick(()=>{this.renderAccessOverviewChart();this.renderFieldPerfTrend()})},
+        currentCity(city){this.switchDashboardCity(city);this.$nextTick(()=>{this.renderAccessOverviewChart();this.renderFieldPerfTrend()})},
         accessTrendSource(){
             this.$nextTick(()=>this.renderAccessOverviewChart());
         },
